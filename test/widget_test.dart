@@ -6,10 +6,10 @@ void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
     // Initialize dependencies for testing
     configureDependencies();
-    
+
     // Create a simple test widget
     await tester.pumpWidget(
-      MaterialApp(
+      const MaterialApp(
         home: Scaffold(
           body: Center(
             child: Text('Snapkeep Test'),
