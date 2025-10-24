@@ -22,7 +22,6 @@ class ThemeBloc extends HydratedBloc<ThemeEvent, ThemeState> {
       case ThemeType.dark:
         return ThemeMode.dark;
       case ThemeType.system:
-      default:
         return ThemeMode.system;
     }
   }
@@ -34,7 +33,6 @@ class ThemeBloc extends HydratedBloc<ThemeEvent, ThemeState> {
       case ThemeMode.dark:
         return ThemeType.dark;
       case ThemeMode.system:
-      default:
         return ThemeType.system;
     }
   }

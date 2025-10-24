@@ -24,9 +24,6 @@ class LightingModePage extends StatelessWidget {
             break;
           case ThemeMode.dark:
             selectedTheme = ThemeType.dark;
-            break;
-          default:
-            selectedTheme = ThemeType.system;
         }
         return Scaffold(
           appBar: AppBar(
@@ -37,40 +34,29 @@ class LightingModePage extends StatelessWidget {
               ),
             ),
           ),
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              RadioListTile<ThemeType>(
-                title: const Text("Light Theme"),
-                value: ThemeType.light,
-                groupValue: selectedTheme,
-                onChanged: (ThemeType? value) {
-                  if (value != null) {
-                    themeBloc.add(ChangeThemeEvent(themeType: value));
-                  }
-                },
-              ),
-              RadioListTile<ThemeType>(
-                title: const Text("Dark Theme"),
-                value: ThemeType.dark,
-                groupValue: selectedTheme,
-                onChanged: (ThemeType? value) {
-                  if (value != null) {
-                    themeBloc.add(ChangeThemeEvent(themeType: value));
-                  }
-                },
-              ),
-              RadioListTile<ThemeType>(
-                title: const Text("System Theme"),
-                value: ThemeType.system,
-                groupValue: selectedTheme,
-                onChanged: (ThemeType? value) {
-                  if (value != null) {
-                    themeBloc.add(ChangeThemeEvent(themeType: value));
-                  }
-                },
-              ),
-            ],
+          body: RadioGroup<ThemeType>(
+            groupValue: selectedTheme,
+            onChanged: (ThemeType? value) {
+              if (value != null) {
+                themeBloc.add(ChangeThemeEvent(themeType: value));
+              }
+            },
+            child: const Column(
+              children: [
+                RadioListTile<ThemeType>(
+                  title: Text("Light Theme"),
+                  value: ThemeType.light,
+                ),
+                RadioListTile<ThemeType>(
+                  title: Text("Dark Theme"),
+                  value: ThemeType.dark,
+                ),
+                RadioListTile<ThemeType>(
+                  title: Text("System Theme"),
+                  value: ThemeType.system,
+                ),
+              ],
+            ),
           ),
         );
       },
