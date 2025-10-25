@@ -211,6 +211,8 @@ class _SelectableMediaGridState extends State<SelectableMediaGrid> {
           isStored: widget.isStored,
           allStatuses: widget.statuses,
           currentIndex: currentIndex,
+          isFromSaved:
+              widget.isStored, // Si isStored = true, c'est depuis Saved
         ),
       );
     } else {
@@ -220,6 +222,8 @@ class _SelectableMediaGridState extends State<SelectableMediaGrid> {
           isStored: widget.isStored,
           allStatuses: widget.statuses,
           currentIndex: currentIndex,
+          isFromSaved:
+              widget.isStored, // Si isStored = true, c'est depuis Saved
         ),
       );
     }

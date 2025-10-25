@@ -9,8 +9,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snapkeep/src/core/constants/colors.dart';
 import 'package:snapkeep/src/whatsapp/domain/entities/status.dart';
 import 'package:snapkeep/src/whatsapp/presentation/cubit/status_cubit.dart';
+import 'package:snapkeep/src/whatsapp/presentation/bloc/status_bloc.dart';
 import 'package:social_sharing_plus/social_sharing_plus.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:chewie/chewie.dart';
+import 'package:video_player/video_player.dart';
 
 @RoutePage()
 class ImageViewerPage extends StatefulWidget {
@@ -20,28 +23,40 @@ class ImageViewerPage extends StatefulWidget {
     this.isStored = false,
     this.allStatuses = const [],
     this.currentIndex = 0,
+    this.isFromSaved = false,
   });
 
   final Status status;
   final bool isStored;
   final List<Status> allStatuses;
   final int currentIndex;
+  final bool isFromSaved;
 
   @override
   State<ImageViewerPage> createState() => _ImageViewerPageState();
 }
 
 class _ImageViewerPageState extends State<ImageViewerPage> {
-  bool _isStored = false;
   late PageController _pageController;
   late int _currentIndex;
+  bool _isStored = false;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.currentIndex;
     _pageController = PageController(initialPage: widget.currentIndex);
-    _checkStoredStatus();
+    _isStored = widget.isStored;
+
+    // Ajouter un listener pour vérifier l'état à chaque changement de page
+    _pageController.addListener(_onPageChanged);
+
+    // Si pas depuis Saved, vérifier l'état réel
+    if (!widget.isFromSaved) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkStoredStatus();
+      });
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -62,8 +77,24 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
 
   @override
   void dispose() {
+    _pageController.removeListener(_onPageChanged);
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _onPageChanged() {
+    if (_pageController.page != null) {
+      final newIndex = _pageController.page!.round();
+      if (newIndex != _currentIndex) {
+        setState(() {
+          _currentIndex = newIndex;
+        });
+        // Vérifier l'état du nouveau statut si pas depuis Saved
+        if (!widget.isFromSaved) {
+          _checkStoredStatus();
+        }
+      }
+    }
   }
 
   @override
@@ -95,15 +126,14 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
                       setState(() {
                         _currentIndex = index;
                       });
-                      _checkStoredStatus();
                     },
                     itemCount: widget.allStatuses.length,
                     itemBuilder: (context, index) {
                       final status = widget.allStatuses[index];
-                      return _buildImagePage(status, cubit);
+                      return _buildMediaPage(status, cubit);
                     },
                   )
-                : _buildImagePage(widget.status, cubit),
+                : _buildMediaPage(widget.status, cubit),
           ),
           // Bottom navigation bar fixe
           Positioned(
@@ -131,6 +161,14 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
         ],
       ),
     );
+  }
+
+  Widget _buildMediaPage(Status status, StatusCubit cubit) {
+    if (status.isVideo) {
+      return _VideoPlayerWidget(status: status);
+    }
+
+    return _buildImagePage(status, cubit);
   }
 
   Widget _buildImagePage(Status status, StatusCubit cubit) {
@@ -287,6 +325,21 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     );
   }
 
+  Future<void> _checkStoredStatus() async {
+    final cubit = context.read<StatusCubit>();
+    final currentStatus = widget.allStatuses.isNotEmpty
+        ? widget.allStatuses[_currentIndex]
+        : widget.status;
+    final isStored = await cubit.isStored(path: currentStatus.path);
+    print(
+        'ImageViewerPage: _checkStoredStatus for ${currentStatus.path} = $isStored');
+    if (mounted) {
+      setState(() {
+        _isStored = isStored;
+      });
+    }
+  }
+
   Widget _buildBottomActions(StatusCubit cubit, Status status) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
@@ -309,14 +362,44 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
             color: Colors.green,
           ),
           _buildBottomActionButton(
-            icon: _isStored ? LucideIcons.check : LucideIcons.download,
-            label: _isStored ? 'Sauvegardé' : 'Sauvegarder',
+            icon: _getSaveIcon(),
+            label: _getSaveLabel(),
             onTap: () => _handleSave(cubit, status),
-            color: Colors.orange,
+            color: _getSaveColor(),
           ),
         ],
       ),
     );
+  }
+
+  IconData _getSaveIcon() {
+    if (widget.isFromSaved) {
+      return LucideIcons.trash2;
+    } else if (_isStored) {
+      return LucideIcons.circleCheck;
+    } else {
+      return LucideIcons.download;
+    }
+  }
+
+  String _getSaveLabel() {
+    if (widget.isFromSaved) {
+      return 'Supprimer';
+    } else if (_isStored) {
+      return 'Sauvegardé';
+    } else {
+      return 'Sauvegarder';
+    }
+  }
+
+  Color _getSaveColor() {
+    if (widget.isFromSaved) {
+      return Colors.red;
+    } else if (_isStored) {
+      return Colors.green;
+    } else {
+      return Colors.orange;
+    }
   }
 
   Widget _buildBottomActionButton({
@@ -357,24 +440,24 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     );
   }
 
-  Future<void> _checkStoredStatus() async {
-    final cubit = context.read<StatusCubit>();
-    final currentStatus = widget.allStatuses.isNotEmpty
-        ? widget.allStatuses[_currentIndex]
-        : widget.status;
-    final isStored = await cubit.isStored(path: currentStatus.path);
-    if (mounted) {
-      setState(() {
-        _isStored = isStored;
-      });
-    }
-  }
-
   void _handleSave(StatusCubit cubit, Status status) async {
-    if (!_isStored) {
+    // Si c'est un check (statut déjà sauvegardé et pas depuis Saved), ne rien faire
+    if (!widget.isFromSaved && _isStored) {
+      return; // Ne rien faire - comportement voulu
+    }
+
+    if (widget.isFromSaved) {
+      // Page Saved - supprimer le statut sauvegardé
+      cubit.destroy(path: status.path);
+      context.read<StatusBloc>().add(FetchStoredStatuses());
+      _showActionFeedback('Image supprimée', Colors.red);
+    } else {
+      // Pages Images/Videos - sauvegarder le statut
       cubit.store(status: status);
-      await _checkStoredStatus();
-      _showActionFeedback('Image sauvegardée', Colors.orange);
+      setState(() {
+        _isStored = true;
+      });
+      _showActionFeedback('Image sauvegardée', Colors.green);
     }
   }
 }
@@ -451,5 +534,75 @@ class PopMenu extends StatelessWidget {
         ];
       },
     );
+  }
+}
+
+class _VideoPlayerWidget extends StatefulWidget {
+  const _VideoPlayerWidget({required this.status});
+
+  final Status status;
+
+  @override
+  State<_VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
+}
+
+class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
+  VideoPlayerController? _videoPlayerController;
+  ChewieController? _chewieController;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeVideo();
+  }
+
+  Future<void> _initializeVideo() async {
+    try {
+      _videoPlayerController =
+          VideoPlayerController.file(File(widget.status.path));
+      await _videoPlayerController!.initialize();
+
+      if (mounted) {
+        _chewieController = ChewieController(
+          videoPlayerController: _videoPlayerController!,
+          autoPlay: false,
+          looping: false,
+          showControls: true,
+          materialProgressColors: ChewieProgressColors(
+            playedColor: Colors.blue,
+            handleColor: Colors.blue,
+            backgroundColor: Colors.grey,
+            bufferedColor: Colors.lightBlue,
+          ),
+        );
+
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isInitialized = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _videoPlayerController?.dispose();
+    _chewieController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _isInitialized && _chewieController != null
+        ? Chewie(controller: _chewieController!)
+        : const Center(
+            child: CircularProgressIndicator(),
+          );
   }
 }

@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -14,10 +15,12 @@ class StatusAction extends StatefulWidget {
     super.key,
     required this.status,
     this.isStored = false,
+    this.isFromSaved = false,
   });
 
   final Status status;
   final bool isStored;
+  final bool isFromSaved;
 
   @override
   State<StatusAction> createState() => _StatusActionState();
@@ -25,12 +28,36 @@ class StatusAction extends StatefulWidget {
 
 class _StatusActionState extends State<StatusAction> {
   bool _isStored = false;
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
     _isStored = widget.isStored;
-    _checkStoredStatus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkStoredStatus();
+    });
+
+    // Vérifier périodiquement l'état
+    _refreshTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (mounted) {
+        _checkStoredStatus();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(StatusAction oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.status.path != widget.status.path) {
+      _checkStoredStatus();
+    }
   }
 
   Future<void> _checkStoredStatus() async {
@@ -40,12 +67,29 @@ class _StatusActionState extends State<StatusAction> {
       setState(() {
         _isStored = isStored;
       });
+      print('StatusAction: _isStored = $isStored for ${widget.status.path}');
+    }
+  }
+
+  IconData _getIcon() {
+    if (widget.isFromSaved) {
+      // Page Saved - toujours afficher poubelle
+      return LucideIcons.trash2;
+    } else if (_isStored) {
+      // Pages Images/Videos - statut déjà sauvegardé - afficher check
+      return LucideIcons.circleCheck;
+    } else {
+      // Pages Images/Videos - statut non sauvegardé - afficher téléchargement
+      return LucideIcons.download;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<StatusCubit>();
+
+    print(
+        'StatusAction build: widget.isStored = ${widget.isStored}, _isStored = $_isStored');
 
     return Stack(
       children: <Widget>[
@@ -66,22 +110,45 @@ class _StatusActionState extends State<StatusAction> {
               children: <Widget>[
                 IconButton(
                   onPressed: () async {
+                    // Si c'est un check (statut déjà sauvegardé et pas depuis Saved), ne rien faire
+                    if (!widget.isFromSaved && _isStored) {
+                      return; // Ne rien faire - comportement voulu
+                    }
+
                     String message = '';
 
-                    if (!widget.status.isVideo) {
-                      message = _isStored ? 'Image deleted' : 'Image saved';
-                    } else {
-                      message = _isStored ? 'Video deleted' : 'Video saved';
-                    }
-
-                    if (_isStored) {
+                    if (widget.isFromSaved) {
+                      // Page Saved - supprimer le statut sauvegardé
                       cubit.destroy(path: widget.status.path);
                       context.read<StatusBloc>().add(FetchStoredStatuses());
+                      message = !widget.status.isVideo
+                          ? 'Image deleted'
+                          : 'Video deleted';
                     } else {
+                      // Pages Images/Videos - sauvegarder le statut
                       cubit.store(status: widget.status);
+                      message = !widget.status.isVideo
+                          ? 'Image saved'
+                          : 'Video saved';
                     }
 
-                    await _checkStoredStatus();
+                    // Mettre à jour l'état immédiatement
+                    setState(() {
+                      if (widget.isFromSaved) {
+                        // Page Saved - on supprime, donc _isStored devient false
+                        _isStored = false;
+                      } else {
+                        // Pages Images/Videos - on sauvegarde, donc _isStored devient true
+                        _isStored = true;
+                      }
+                    });
+
+                    // Vérifier l'état réel après un court délai
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      if (mounted) {
+                        _checkStoredStatus();
+                      }
+                    });
 
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -100,7 +167,7 @@ class _StatusActionState extends State<StatusAction> {
                     }
                   },
                   icon: Icon(
-                    _isStored ? LucideIcons.check : LucideIcons.download,
+                    _getIcon(),
                     color: kWhiteColor,
                     size: 25.sp,
                   ),

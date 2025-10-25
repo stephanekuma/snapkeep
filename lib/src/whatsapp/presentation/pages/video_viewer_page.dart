@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:snapkeep/src/core/constants/colors.dart';
 import 'package:snapkeep/src/whatsapp/domain/entities/status.dart';
 import 'package:snapkeep/src/whatsapp/presentation/cubit/status_cubit.dart';
+import 'package:snapkeep/src/whatsapp/presentation/bloc/status_bloc.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
 import 'package:social_sharing_plus/social_sharing_plus.dart';
@@ -21,12 +22,14 @@ class VideoViewerPage extends StatefulWidget {
     this.isStored = false,
     this.allStatuses = const [],
     this.currentIndex = 0,
+    this.isFromSaved = false,
   });
 
   final Status status;
   final bool isStored;
   final List<Status> allStatuses;
   final int currentIndex;
+  final bool isFromSaved;
 
   @override
   State<VideoViewerPage> createState() => _VideoViewerPageState();
@@ -42,7 +45,17 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
     super.initState();
     _currentIndex = widget.currentIndex;
     _pageController = PageController(initialPage: widget.currentIndex);
-    _checkStoredStatus();
+    _isStored = widget.isStored;
+
+    // Ajouter un listener pour vérifier l'état à chaque changement de page
+    _pageController.addListener(_onPageChanged);
+
+    // Si pas depuis Saved, vérifier l'état réel
+    if (!widget.isFromSaved) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkStoredStatus();
+      });
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -62,8 +75,24 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
 
   @override
   void dispose() {
+    _pageController.removeListener(_onPageChanged);
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _onPageChanged() {
+    if (_pageController.page != null) {
+      final newIndex = _pageController.page!.round();
+      if (newIndex != _currentIndex) {
+        setState(() {
+          _currentIndex = newIndex;
+        });
+        // Vérifier l'état du nouveau statut si pas depuis Saved
+        if (!widget.isFromSaved) {
+          _checkStoredStatus();
+        }
+      }
+    }
   }
 
   @override
@@ -94,15 +123,14 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
                       setState(() {
                         _currentIndex = index;
                       });
-                      _checkStoredStatus();
                     },
                     itemCount: widget.allStatuses.length,
                     itemBuilder: (context, index) {
                       final status = widget.allStatuses[index];
-                      return _VideoPlayerWidget(status: status);
+                      return _buildMediaPage(status, cubit);
                     },
                   )
-                : _VideoPlayerWidget(status: widget.status),
+                : _buildMediaPage(widget.status, cubit),
           ),
           // Bottom navigation bar fixe
           Positioned(
@@ -132,28 +160,28 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
     );
   }
 
-  Future<void> _checkStoredStatus() async {
-    final cubit = context.read<StatusCubit>();
-    final currentStatus = widget.allStatuses.isNotEmpty
-        ? widget.allStatuses[_currentIndex]
-        : widget.status;
-    final isStored = await cubit.isStored(path: currentStatus.path);
-    if (mounted) {
-      setState(() {
-        _isStored = isStored;
-      });
-    }
-  }
-
   void _handleShare(StatusCubit cubit, Status status) {
     cubit.share(status: status);
     _showActionFeedback('Partage en cours...', Colors.blue);
   }
 
   void _handleSave(StatusCubit cubit, Status status) async {
-    if (!_isStored) {
+    // Si c'est un check (statut déjà sauvegardé et pas depuis Saved), ne rien faire
+    if (!widget.isFromSaved && _isStored) {
+      return; // Ne rien faire - comportement voulu
+    }
+
+    if (widget.isFromSaved) {
+      // Page Saved - supprimer le statut sauvegardé
+      cubit.destroy(path: status.path);
+      context.read<StatusBloc>().add(FetchStoredStatuses());
+      _showActionFeedback('Vidéo supprimée', Colors.red);
+    } else {
+      // Pages Images/Videos - sauvegarder le statut
       cubit.store(status: status);
-      await _checkStoredStatus();
+      setState(() {
+        _isStored = true;
+      });
       _showActionFeedback('Vidéo sauvegardée', Colors.green);
     }
   }
@@ -174,6 +202,51 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
       _showActionFeedback('Ouverture de WhatsApp...', Colors.blue);
     } catch (e) {
       _showActionFeedback('Erreur lors du partage: $e', Colors.red);
+    }
+  }
+
+  Future<void> _checkStoredStatus() async {
+    final cubit = context.read<StatusCubit>();
+    final currentStatus = widget.allStatuses.isNotEmpty
+        ? widget.allStatuses[_currentIndex]
+        : widget.status;
+    final isStored = await cubit.isStored(path: currentStatus.path);
+    print(
+        'VideoViewerPage: _checkStoredStatus for ${currentStatus.path} = $isStored');
+    if (mounted) {
+      setState(() {
+        _isStored = isStored;
+      });
+    }
+  }
+
+  IconData _getSaveIcon() {
+    if (widget.isFromSaved) {
+      return LucideIcons.trash2;
+    } else if (_isStored) {
+      return LucideIcons.circleCheck;
+    } else {
+      return LucideIcons.download;
+    }
+  }
+
+  String _getSaveLabel() {
+    if (widget.isFromSaved) {
+      return 'Supprimer';
+    } else if (_isStored) {
+      return 'Sauvegardé';
+    } else {
+      return 'Sauvegarder';
+    }
+  }
+
+  Color _getSaveColor() {
+    if (widget.isFromSaved) {
+      return Colors.red;
+    } else if (_isStored) {
+      return Colors.green;
+    } else {
+      return Colors.orange;
     }
   }
 
@@ -199,10 +272,10 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
             color: Colors.green,
           ),
           _buildBottomActionButton(
-            icon: _isStored ? LucideIcons.check : LucideIcons.download,
-            label: _isStored ? 'Sauvegardé' : 'Sauvegarder',
+            icon: _getSaveIcon(),
+            label: _getSaveLabel(),
             onTap: () => _handleSave(cubit, status),
-            color: Colors.orange,
+            color: _getSaveColor(),
           ),
         ],
       ),
@@ -274,6 +347,104 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
           borderRadius: BorderRadius.circular(8.r),
         ),
       ),
+    );
+  }
+
+  Widget _buildMediaPage(Status status, StatusCubit cubit) {
+    if (status.isVideo) {
+      return _VideoPlayerWidget(status: status);
+    }
+
+    return _buildImagePage(status, cubit);
+  }
+
+  Widget _buildImagePage(Status status, StatusCubit cubit) {
+    return Stack(
+      children: [
+        GestureDetector(
+          onDoubleTap: () {
+            showModalBottomSheet(
+              enableDrag: false,
+              showDragHandle: true,
+              context: context,
+              builder: (context) => Container(
+                decoration: BoxDecoration(
+                  color: kWhiteColor,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20.r),
+                    topRight: Radius.circular(20.r),
+                  ),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: 8.h,
+                    horizontal: 30.w,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      ListTile(
+                        leading: Icon(
+                          LucideIcons.share2,
+                          size: 25.sp,
+                        ),
+                        title: Text(
+                          'Share',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                          ),
+                        ),
+                        onTap: () {
+                          cubit.share(status: status);
+                          context.router.maybePop();
+                        },
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: Icon(
+                          LucideIcons.download,
+                          size: 25.sp,
+                        ),
+                        title: Text(
+                          'Save',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                          ),
+                        ),
+                        onTap: () {
+                          cubit.store(status: status);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: kPrimaryColor,
+                              content: Text(
+                                'Image saved',
+                                style: TextStyle(
+                                  color: kWhiteColor,
+                                  fontSize: 14.sp,
+                                ),
+                              ),
+                            ),
+                          );
+                          context.router.maybePop();
+                        },
+                      ),
+                      SizedBox(height: 20.h),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+          child: InteractiveViewer(
+            minScale: 0.5,
+            maxScale: 4.0,
+            child: Image.file(
+              File(status.path),
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

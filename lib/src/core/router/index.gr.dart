@@ -19,6 +19,7 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
     bool isStored = false,
     List<Status> allStatuses = const [],
     int currentIndex = 0,
+    bool isFromSaved = false,
     List<PageRouteInfo>? children,
   }) : super(
           ImageViewerRoute.name,
@@ -28,6 +29,7 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
             isStored: isStored,
             allStatuses: allStatuses,
             currentIndex: currentIndex,
+            isFromSaved: isFromSaved,
           ),
           initialChildren: children,
         );
@@ -44,6 +46,7 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
         isStored: args.isStored,
         allStatuses: args.allStatuses,
         currentIndex: args.currentIndex,
+        isFromSaved: args.isFromSaved,
       );
     },
   );
@@ -56,6 +59,7 @@ class ImageViewerRouteArgs {
     this.isStored = false,
     this.allStatuses = const [],
     this.currentIndex = 0,
+    this.isFromSaved = false,
   });
 
   final Key? key;
@@ -68,9 +72,11 @@ class ImageViewerRouteArgs {
 
   final int currentIndex;
 
+  final bool isFromSaved;
+
   @override
   String toString() {
-    return 'ImageViewerRouteArgs{key: $key, status: $status, isStored: $isStored, allStatuses: $allStatuses, currentIndex: $currentIndex}';
+    return 'ImageViewerRouteArgs{key: $key, status: $status, isStored: $isStored, allStatuses: $allStatuses, currentIndex: $currentIndex, isFromSaved: $isFromSaved}';
   }
 
   @override
@@ -81,7 +87,8 @@ class ImageViewerRouteArgs {
         status == other.status &&
         isStored == other.isStored &&
         const ListEquality<Status>().equals(allStatuses, other.allStatuses) &&
-        currentIndex == other.currentIndex;
+        currentIndex == other.currentIndex &&
+        isFromSaved == other.isFromSaved;
   }
 
   @override
@@ -90,7 +97,8 @@ class ImageViewerRouteArgs {
       status.hashCode ^
       isStored.hashCode ^
       const ListEquality<Status>().hash(allStatuses) ^
-      currentIndex.hashCode;
+      currentIndex.hashCode ^
+      isFromSaved.hashCode;
 }
 
 /// generated route for
@@ -231,6 +239,7 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
     bool isStored = false,
     List<Status> allStatuses = const [],
     int currentIndex = 0,
+    bool isFromSaved = false,
     List<PageRouteInfo>? children,
   }) : super(
           VideoViewerRoute.name,
@@ -240,6 +249,7 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
             isStored: isStored,
             allStatuses: allStatuses,
             currentIndex: currentIndex,
+            isFromSaved: isFromSaved,
           ),
           initialChildren: children,
         );
@@ -256,6 +266,7 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
         isStored: args.isStored,
         allStatuses: args.allStatuses,
         currentIndex: args.currentIndex,
+        isFromSaved: args.isFromSaved,
       );
     },
   );
@@ -268,6 +279,7 @@ class VideoViewerRouteArgs {
     this.isStored = false,
     this.allStatuses = const [],
     this.currentIndex = 0,
+    this.isFromSaved = false,
   });
 
   final Key? key;
@@ -280,9 +292,11 @@ class VideoViewerRouteArgs {
 
   final int currentIndex;
 
+  final bool isFromSaved;
+
   @override
   String toString() {
-    return 'VideoViewerRouteArgs{key: $key, status: $status, isStored: $isStored, allStatuses: $allStatuses, currentIndex: $currentIndex}';
+    return 'VideoViewerRouteArgs{key: $key, status: $status, isStored: $isStored, allStatuses: $allStatuses, currentIndex: $currentIndex, isFromSaved: $isFromSaved}';
   }
 
   @override
@@ -293,7 +307,8 @@ class VideoViewerRouteArgs {
         status == other.status &&
         isStored == other.isStored &&
         const ListEquality<Status>().equals(allStatuses, other.allStatuses) &&
-        currentIndex == other.currentIndex;
+        currentIndex == other.currentIndex &&
+        isFromSaved == other.isFromSaved;
   }
 
   @override
@@ -302,7 +317,8 @@ class VideoViewerRouteArgs {
       status.hashCode ^
       isStored.hashCode ^
       const ListEquality<Status>().hash(allStatuses) ^
-      currentIndex.hashCode;
+      currentIndex.hashCode ^
+      isFromSaved.hashCode;
 }
 
 /// generated route for
