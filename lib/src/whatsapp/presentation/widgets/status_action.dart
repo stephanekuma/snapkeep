@@ -2,12 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:snapkeep/src/core/constants/colors.dart';
 import 'package:snapkeep/src/whatsapp/domain/entities/status.dart';
 import 'package:snapkeep/src/whatsapp/presentation/bloc/status_bloc.dart';
 import 'package:snapkeep/src/whatsapp/presentation/cubit/status_cubit.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class StatusAction extends StatelessWidget {
   const StatusAction({
@@ -71,10 +71,8 @@ class StatusAction extends StatelessWidget {
                       ),
                     );
                   },
-                  icon: FaIcon(
-                    isStored
-                        ? FontAwesomeIcons.trash
-                        : FontAwesomeIcons.download,
+                  icon: Icon(
+                    isStored ? LucideIcons.trash2 : LucideIcons.download,
                     color: kWhiteColor,
                     size: 25.sp,
                   ),
@@ -83,8 +81,8 @@ class StatusAction extends StatelessWidget {
                   onPressed: () {
                     cubit.share(status: status);
                   },
-                  icon: FaIcon(
-                    FontAwesomeIcons.shareFromSquare,
+                  icon: Icon(
+                    LucideIcons.share2,
                     color: kWhiteColor,
                     size: 25.sp,
                   ),

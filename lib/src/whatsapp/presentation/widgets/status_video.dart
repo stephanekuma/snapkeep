@@ -5,13 +5,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:snapkeep/src/core/router/index.dart';
 import 'package:snapkeep/src/core/widgets/loader.dart';
 import 'package:snapkeep/src/whatsapp/domain/entities/status.dart';
 import 'package:snapkeep/src/whatsapp/presentation/cubit/status_cubit.dart';
 import 'package:snapkeep/src/whatsapp/presentation/widgets/status_action.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class StatusVideo extends StatefulWidget {
   const StatusVideo({
@@ -101,8 +101,8 @@ class _StatusVideoState extends State<StatusVideo> {
               )
             else
               Center(
-                child: FaIcon(
-                  FontAwesomeIcons.play,
+                child: Icon(
+                  LucideIcons.play,
                   color: Colors.white,
                   size: 35.sp,
                 ),

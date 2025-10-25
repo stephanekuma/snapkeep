@@ -5,11 +5,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:snapkeep/src/core/constants/colors.dart';
 import 'package:snapkeep/src/whatsapp/domain/entities/status.dart';
 import 'package:snapkeep/src/whatsapp/presentation/cubit/status_cubit.dart';
+import 'package:social_sharing_plus/social_sharing_plus.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 @RoutePage()
 class ImageViewerPage extends StatefulWidget {
@@ -54,111 +55,252 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.black.withValues(alpha: 0.8),
+        elevation: 0,
         title: Text(
           'Snap Keep',
           style: TextStyle(
             fontSize: 22.sp,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        actions: <Widget>[PopMenu(cubit: cubit, widget: widget)],
       ),
-      body: GestureDetector(
-        onDoubleTap: () {
-          showModalBottomSheet(
-            enableDrag: false,
-            showDragHandle: true,
-            context: context,
-            builder: (context) => Container(
-              decoration: BoxDecoration(
-                color: kWhiteColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20.r),
-                  topRight: Radius.circular(20.r),
-                ),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: 8.h,
-                  horizontal: 30.w,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    ListTile(
-                      leading: FaIcon(
-                        FontAwesomeIcons.shareFromSquare,
-                        size: 25.sp,
-                      ),
-                      title: Text(
-                        'Share',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                        ),
-                      ),
-                      onTap: () {
-                        cubit.share(status: widget.status);
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Sharing...',
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                              ),
+      body: Stack(
+        children: [
+          GestureDetector(
+            onDoubleTap: () {
+              showModalBottomSheet(
+                enableDrag: false,
+                showDragHandle: true,
+                context: context,
+                builder: (context) => Container(
+                  decoration: BoxDecoration(
+                    color: kWhiteColor,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20.r),
+                      topRight: Radius.circular(20.r),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: 8.h,
+                      horizontal: 30.w,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        ListTile(
+                          leading: Icon(
+                            LucideIcons.share2,
+                            size: 25.sp,
+                          ),
+                          title: Text(
+                            'Share',
+                            style: TextStyle(
+                              fontSize: 14.sp,
                             ),
                           ),
-                        );
-
-                        context.router.maybePop();
-                      },
-                    ),
-                    const Divider(),
-                    ListTile(
-                      leading: FaIcon(
-                        FontAwesomeIcons.download,
-                        size: 25.sp,
-                      ),
-                      title: Text(
-                        'Save',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                        ),
-                      ),
-                      onTap: () {
-                        cubit.store(status: widget.status);
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: kPrimaryColor,
-                            content: Text(
-                              'Image saved',
-                              style: TextStyle(
-                                color: kWhiteColor,
-                                fontSize: 14.sp,
+                          onTap: () {
+                            cubit.share(status: widget.status);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Sharing...',
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                  ),
+                                ),
                               ),
+                            );
+                            context.router.maybePop();
+                          },
+                        ),
+                        const Divider(),
+                        ListTile(
+                          leading: Icon(
+                            LucideIcons.download,
+                            size: 25.sp,
+                          ),
+                          title: Text(
+                            'Save',
+                            style: TextStyle(
+                              fontSize: 14.sp,
                             ),
                           ),
-                        );
-
-                        context.router.maybePop();
-                      },
+                          onTap: () {
+                            cubit.store(status: widget.status);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: kPrimaryColor,
+                                content: Text(
+                                  'Image saved',
+                                  style: TextStyle(
+                                    color: kWhiteColor,
+                                    fontSize: 14.sp,
+                                  ),
+                                ),
+                              ),
+                            );
+                            context.router.maybePop();
+                          },
+                        ),
+                        SizedBox(height: 20.h),
+                      ],
                     ),
-                    SizedBox(height: 20.h),
-                  ],
+                  ),
+                ),
+              );
+            },
+            child: InteractiveViewer(
+              child: Center(
+                child: Image.file(
+                  File(widget.status.path),
                 ),
               ),
             ),
-          );
+          ),
+          // Actions en bas de page
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: _buildBottomActions(cubit),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleRepost(StatusCubit cubit) async {
+    try {
+      // Partager directement vers WhatsApp
+      await SocialSharingPlus.shareToSocialMedia(
+        SocialPlatform.whatsapp,
+        'Statut partagé depuis SnapKeep',
+        media: widget.status.path,
+        isOpenBrowser: false,
+        onAppNotInstalled: () {
+          _showActionFeedback(
+              'WhatsApp n\'est pas installé sur cet appareil', Colors.red);
         },
-        child: InteractiveViewer(
-          child: Center(
-            child: Image.file(
-              File(widget.status.path),
+      );
+      _showActionFeedback('Ouverture de WhatsApp...', Colors.blue);
+    } catch (e) {
+      _showActionFeedback('Erreur lors du partage: $e', Colors.red);
+    }
+  }
+
+  void _handleShare(StatusCubit cubit) {
+    cubit.share(status: widget.status);
+    _showActionFeedback('Partage en cours...', Colors.green);
+  }
+
+  void _showActionFeedback(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              LucideIcons.circleCheck,
+              color: Colors.white,
+              size: 16.sp,
             ),
+            SizedBox(width: 8.w),
+            Text(
+              message,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: color,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomActions(StatusCubit cubit) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildBottomActionButton(
+            icon: LucideIcons.rotateCcw,
+            label: 'Republier',
+            onTap: () => _handleRepost(cubit),
+            color: Colors.blue,
+          ),
+          _buildBottomActionButton(
+            icon: LucideIcons.share2,
+            label: 'Partager',
+            onTap: () => _handleShare(cubit),
+            color: Colors.green,
+          ),
+          _buildBottomActionButton(
+            icon: LucideIcons.download,
+            label: 'Sauvegarder',
+            onTap: () => _handleSave(cubit),
+            color: Colors.orange,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: Colors.white,
+                size: 24.sp,
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  void _handleSave(StatusCubit cubit) {
+    cubit.store(status: widget.status);
+    _showActionFeedback('Image sauvegardée', Colors.orange);
   }
 }
 
@@ -175,8 +317,8 @@ class PopMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
-      icon: FaIcon(
-        FontAwesomeIcons.ellipsisVertical,
+      icon: Icon(
+        LucideIcons.ellipsisVertical,
         color: Colors.white,
         size: 25.sp,
       ),
@@ -204,8 +346,8 @@ class PopMenu extends StatelessWidget {
           PopupMenuItem(
             value: 'share',
             child: ListTile(
-              leading: FaIcon(
-                FontAwesomeIcons.shareFromSquare,
+              leading: Icon(
+                LucideIcons.share2,
                 size: 25.sp,
               ),
               title: Text(
@@ -219,8 +361,8 @@ class PopMenu extends StatelessWidget {
           PopupMenuItem(
             value: 'save',
             child: ListTile(
-              leading: FaIcon(
-                FontAwesomeIcons.download,
+              leading: Icon(
+                LucideIcons.download,
                 size: 25.sp,
               ),
               title: Text(

@@ -5,13 +5,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:snapkeep/src/core/constants/colors.dart';
 import 'package:snapkeep/src/whatsapp/domain/entities/status.dart';
 import 'package:snapkeep/src/whatsapp/presentation/cubit/status_cubit.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
+import 'package:social_sharing_plus/social_sharing_plus.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 @RoutePage()
 class VideoViewerPage extends StatefulWidget {
@@ -111,287 +112,97 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: <Widget>[
-          _buildModernActionMenu(cubit),
-        ],
       ),
-      body: GestureDetector(
-        onDoubleTap: () {
-          showModalBottomSheet(
-            enableDrag: false,
-            showDragHandle: true,
-            context: context,
-            builder: (context) => Container(
-              decoration: BoxDecoration(
-                color: kWhiteColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20.r),
-                  topRight: Radius.circular(20.r),
-                ),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  vertical: 8.h,
-                  horizontal: 30.w,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    ListTile(
-                      leading: FaIcon(
-                        FontAwesomeIcons.shareFromSquare,
-                        size: 25.sp,
-                      ),
-                      title: Text(
-                        'Share',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                        ),
-                      ),
-                      onTap: () {
-                        cubit.share(status: widget.status);
-
-                        context.router.maybePop();
-                      },
+      body: Stack(
+        children: [
+          GestureDetector(
+            onDoubleTap: () {
+              showModalBottomSheet(
+                enableDrag: false,
+                showDragHandle: true,
+                context: context,
+                builder: (context) => Container(
+                  decoration: BoxDecoration(
+                    color: kWhiteColor,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20.r),
+                      topRight: Radius.circular(20.r),
                     ),
-                    const Divider(),
-                    ListTile(
-                      leading: FaIcon(
-                        FontAwesomeIcons.download,
-                        size: 25.sp,
-                      ),
-                      title: Text(
-                        'Save',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                        ),
-                      ),
-                      onTap: () {
-                        cubit.store(status: widget.status);
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: kPrimaryColor,
-                            content: Text(
-                              'Image saved',
-                              style: TextStyle(
-                                color: kWhiteColor,
-                                fontSize: 14.sp,
-                              ),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      vertical: 8.h,
+                      horizontal: 30.w,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        ListTile(
+                          leading: Icon(
+                            LucideIcons.share2,
+                            size: 25.sp,
+                          ),
+                          title: Text(
+                            'Share',
+                            style: TextStyle(
+                              fontSize: 14.sp,
                             ),
                           ),
-                        );
-
-                        context.router.maybePop();
-                      },
+                          onTap: () {
+                            cubit.share(status: widget.status);
+                            context.router.maybePop();
+                          },
+                        ),
+                        const Divider(),
+                        ListTile(
+                          leading: Icon(
+                            LucideIcons.download,
+                            size: 25.sp,
+                          ),
+                          title: Text(
+                            'Save',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                            ),
+                          ),
+                          onTap: () {
+                            cubit.store(status: widget.status);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: kPrimaryColor,
+                                content: Text(
+                                  'Image saved',
+                                  style: TextStyle(
+                                    color: kWhiteColor,
+                                    fontSize: 14.sp,
+                                  ),
+                                ),
+                              ),
+                            );
+                            context.router.maybePop();
+                          },
+                        ),
+                        SizedBox(height: 20.h),
+                      ],
                     ),
-                    SizedBox(height: 20.h),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          );
-        },
-        child: _isInitialized && chewieController != null
-            ? Chewie(controller: chewieController!)
-            : const Center(
-                child: CircularProgressIndicator(),
-              ),
-      ),
-    );
-  }
-
-  Widget _buildModernActionMenu(StatusCubit cubit) {
-    return Container(
-      margin: EdgeInsets.only(right: 8.w),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Bouton Share avec animation
-          _buildActionButton(
-            icon: FontAwesomeIcons.shareFromSquare,
-            label: 'Partager',
-            onTap: () => _handleShare(cubit),
-            color: Colors.blue,
+              );
+            },
+            child: _isInitialized && chewieController != null
+                ? Chewie(controller: chewieController!)
+                : const Center(
+                    child: CircularProgressIndicator(),
+                  ),
           ),
-          SizedBox(width: 12.w),
-          // Bouton Save avec animation
-          _buildActionButton(
-            icon: FontAwesomeIcons.download,
-            label: 'Sauvegarder',
-            onTap: () => _handleSave(cubit),
-            color: Colors.green,
+          // Actions en bas de page
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: _buildBottomActions(cubit),
           ),
-          SizedBox(width: 8.w),
-          // Menu plus d'options
-          _buildMoreOptionsMenu(cubit),
         ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required Color color,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(25.r),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(25.r),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: Offset(0, 2.h),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FaIcon(
-                icon,
-                color: Colors.white,
-                size: 16.sp,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                label,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMoreOptionsMenu(StatusCubit cubit) {
-    return PopupMenuButton<String>(
-      icon: Container(
-        padding: EdgeInsets.all(12.w),
-        decoration: BoxDecoration(
-          color: Colors.grey[800],
-          borderRadius: BorderRadius.circular(25.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 6,
-              offset: Offset(0, 2.h),
-            ),
-          ],
-        ),
-        child: FaIcon(
-          FontAwesomeIcons.ellipsisVertical,
-          color: Colors.white,
-          size: 16.sp,
-        ),
-      ),
-      offset: Offset(0, 50.h),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      onSelected: (value) {
-        switch (value) {
-          case 'info':
-            _showVideoInfo();
-            break;
-          case 'delete':
-            _showDeleteConfirmation(cubit);
-            break;
-          case 'favorite':
-            _toggleFavorite();
-            break;
-        }
-      },
-      itemBuilder: (context) => [
-        _buildMenuItem(
-          icon: FontAwesomeIcons.circleInfo,
-          title: 'Informations',
-          subtitle: 'Détails du fichier',
-          value: 'info',
-        ),
-        _buildMenuItem(
-          icon: FontAwesomeIcons.heart,
-          title: 'Ajouter aux favoris',
-          subtitle: 'Marquer comme important',
-          value: 'favorite',
-        ),
-        _buildMenuItem(
-          icon: FontAwesomeIcons.trash,
-          title: 'Supprimer',
-          subtitle: 'Retirer de la galerie',
-          value: 'delete',
-          isDestructive: true,
-        ),
-      ],
-    );
-  }
-
-  PopupMenuItem<String> _buildMenuItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required String value,
-    bool isDestructive = false,
-  }) {
-    final color = isDestructive ? Colors.red : Colors.grey[700];
-
-    return PopupMenuItem<String>(
-      value: value,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 4.h),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8.w),
-              decoration: BoxDecoration(
-                color: color!.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: FaIcon(
-                icon,
-                color: color,
-                size: 16.sp,
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: color,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -411,8 +222,8 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
       SnackBar(
         content: Row(
           children: [
-            FaIcon(
-              FontAwesomeIcons.circleCheck,
+            Icon(
+              LucideIcons.circleCheck,
               color: Colors.white,
               size: 16.sp,
             ),
@@ -446,8 +257,8 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
         ),
         title: Row(
           children: [
-            FaIcon(
-              FontAwesomeIcons.circleInfo,
+            Icon(
+              LucideIcons.info,
               color: Colors.blue,
               size: 20.sp,
             ),
@@ -523,8 +334,8 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
         ),
         title: Row(
           children: [
-            FaIcon(
-              FontAwesomeIcons.trash,
+            Icon(
+              LucideIcons.trash2,
               color: Colors.red,
               size: 20.sp,
             ),
@@ -570,5 +381,95 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
 
   void _toggleFavorite() {
     _showActionFeedback('Ajouté aux favoris', Colors.orange);
+  }
+
+  void _handleRepost(StatusCubit cubit) async {
+    try {
+      // Partager directement vers WhatsApp
+      await SocialSharingPlus.shareToSocialMedia(
+        SocialPlatform.whatsapp,
+        'Statut partagé depuis SnapKeep',
+        media: widget.status.path,
+        isOpenBrowser: false,
+        onAppNotInstalled: () {
+          _showActionFeedback(
+              'WhatsApp n\'est pas installé sur cet appareil', Colors.red);
+        },
+      );
+      _showActionFeedback('Ouverture de WhatsApp...', Colors.blue);
+    } catch (e) {
+      _showActionFeedback('Erreur lors du partage: $e', Colors.red);
+    }
+  }
+
+  Widget _buildBottomActions(StatusCubit cubit) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildBottomActionButton(
+            icon: LucideIcons.rotateCcw,
+            label: 'Republier',
+            onTap: () => _handleRepost(cubit),
+            color: Colors.blue,
+          ),
+          _buildBottomActionButton(
+            icon: LucideIcons.share2,
+            label: 'Partager',
+            onTap: () => _handleShare(cubit),
+            color: Colors.green,
+          ),
+          _buildBottomActionButton(
+            icon: LucideIcons.download,
+            label: 'Sauvegarder',
+            onTap: () => _handleSave(cubit),
+            color: Colors.orange,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: Colors.white,
+                size: 24.sp,
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
