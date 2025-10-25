@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
@@ -34,12 +33,9 @@ class VideoViewerPage extends StatefulWidget {
 }
 
 class _VideoViewerPageState extends State<VideoViewerPage> {
-  VideoPlayerController? videoPlayerController;
-  ChewieController? chewieController;
-  bool _isInitialized = false;
-  bool _isStored = false;
   late PageController _pageController;
   late int _currentIndex;
+  bool _isStored = false;
 
   @override
   void initState() {
@@ -53,9 +49,8 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
         SnackBar(
           backgroundColor: kDarkColor,
           content: Text(
-            'Double tap to save or share',
+            'Pinch to zoom\nDouble tap to save or share',
             style: TextStyle(
-              color: kWhiteColor,
               fontSize: 14.sp,
               fontWeight: FontWeight.bold,
             ),
@@ -63,47 +58,11 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
         ),
       );
     });
-
-    _initializeVideo();
-  }
-
-  Future<void> _initializeVideo() async {
-    try {
-      videoPlayerController = VideoPlayerController.file(
-        File(widget.status.path),
-      );
-      await videoPlayerController!.initialize();
-
-      if (mounted) {
-        chewieController = ChewieController(
-          videoPlayerController: videoPlayerController!,
-          autoInitialize: true,
-          autoPlay: true,
-          looping: true,
-          errorBuilder: (context, errorMessage) => Center(
-            child: Text(errorMessage),
-          ),
-        );
-        setState(() {
-          _isInitialized = true;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur lors du chargement de la vidéo: $e'),
-          ),
-        );
-      }
-    }
   }
 
   @override
   void dispose() {
     _pageController.dispose();
-    videoPlayerController?.dispose();
-    chewieController?.dispose();
     super.dispose();
   }
 
@@ -114,9 +73,8 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black.withValues(alpha: 0.8),
-        elevation: 0,
         title: Text(
-          'Snap Keep',
+          'Vidéo',
           style: TextStyle(
             fontSize: 22.sp,
             color: Colors.white,
@@ -141,10 +99,10 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
                     itemCount: widget.allStatuses.length,
                     itemBuilder: (context, index) {
                       final status = widget.allStatuses[index];
-                      return _buildVideoPage(status, cubit);
+                      return _VideoPlayerWidget(status: status);
                     },
                   )
-                : _buildVideoPage(widget.status, cubit),
+                : _VideoPlayerWidget(status: widget.status),
           ),
           // Bottom navigation bar fixe
           Positioned(
@@ -174,98 +132,6 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
     );
   }
 
-  Widget _buildVideoPage(Status status, StatusCubit cubit) {
-    return Stack(
-      children: [
-        GestureDetector(
-          onDoubleTap: () {
-            showModalBottomSheet(
-              enableDrag: false,
-              showDragHandle: true,
-              context: context,
-              builder: (context) => Container(
-                decoration: BoxDecoration(
-                  color: kWhiteColor,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20.r),
-                    topRight: Radius.circular(20.r),
-                  ),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: 8.h,
-                    horizontal: 30.w,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      ListTile(
-                        leading: Icon(
-                          LucideIcons.share2,
-                          size: 25.sp,
-                        ),
-                        title: Text(
-                          'Share',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                          ),
-                        ),
-                        onTap: () {
-                          cubit.share(status: status);
-                          context.router.maybePop();
-                        },
-                      ),
-                      const Divider(),
-                      ListTile(
-                        leading: Icon(
-                          LucideIcons.download,
-                          size: 25.sp,
-                        ),
-                        title: Text(
-                          'Save',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                          ),
-                        ),
-                        onTap: () {
-                          cubit.store(status: status);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              backgroundColor: kPrimaryColor,
-                              content: Text(
-                                'Video saved',
-                                style: TextStyle(
-                                  color: kWhiteColor,
-                                  fontSize: 14.sp,
-                                ),
-                              ),
-                            ),
-                          );
-                          context.router.maybePop();
-                        },
-                      ),
-                      SizedBox(height: 20.h),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-          child: _isInitialized && chewieController != null
-              ? Chewie(controller: chewieController!)
-              : const Center(
-                  child: CircularProgressIndicator(),
-                ),
-        ),
-      ],
-    );
-  }
-
-  void _handleShare(StatusCubit cubit, Status status) {
-    cubit.share(status: status);
-    _showActionFeedback('Partage en cours...', Colors.blue);
-  }
-
   Future<void> _checkStoredStatus() async {
     final cubit = context.read<StatusCubit>();
     final currentStatus = widget.allStatuses.isNotEmpty
@@ -279,178 +145,17 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
     }
   }
 
+  void _handleShare(StatusCubit cubit, Status status) {
+    cubit.share(status: status);
+    _showActionFeedback('Partage en cours...', Colors.blue);
+  }
+
   void _handleSave(StatusCubit cubit, Status status) async {
     if (!_isStored) {
       cubit.store(status: status);
       await _checkStoredStatus();
       _showActionFeedback('Vidéo sauvegardée', Colors.green);
     }
-  }
-
-  void _showActionFeedback(String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              LucideIcons.circleCheck,
-              color: Colors.white,
-              size: 16.sp,
-            ),
-            SizedBox(width: 8.w),
-            Text(
-              message,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: color,
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.r),
-        ),
-      ),
-    );
-  }
-
-  void _showVideoInfo() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        title: Row(
-          children: [
-            Icon(
-              LucideIcons.info,
-              color: Colors.blue,
-              size: 20.sp,
-            ),
-            SizedBox(width: 8.w),
-            Text(
-              'Informations',
-              style: TextStyle(fontSize: 18.sp),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildInfoRow('Nom', widget.status.path.split('/').last),
-            _buildInfoRow('Taille',
-                '${(File(widget.status.path).lengthSync() / 1024 / 1024).toStringAsFixed(2)} MB'),
-            _buildInfoRow('Type', 'Vidéo'),
-            _buildInfoRow(
-                'Statut', widget.isStored ? 'Sauvegardé' : 'Temporaire'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Fermer',
-              style: TextStyle(fontSize: 14.sp),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 60.w,
-            child: Text(
-              '$label:',
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[700],
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: Colors.grey[600],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showDeleteConfirmation(StatusCubit cubit) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        title: Row(
-          children: [
-            Icon(
-              LucideIcons.trash2,
-              color: Colors.red,
-              size: 20.sp,
-            ),
-            SizedBox(width: 8.w),
-            Text(
-              'Supprimer',
-              style: TextStyle(fontSize: 18.sp),
-            ),
-          ],
-        ),
-        content: Text(
-          'Êtes-vous sûr de vouloir supprimer cette vidéo ? Cette action est irréversible.',
-          style: TextStyle(fontSize: 14.sp),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Annuler',
-              style: TextStyle(fontSize: 14.sp),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              cubit.destroy(path: widget.status.path);
-              _showActionFeedback('Vidéo supprimée', Colors.red);
-              context.router.maybePop();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: Text(
-              'Supprimer',
-              style: TextStyle(fontSize: 14.sp),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _toggleFavorite() {
-    _showActionFeedback('Ajouté aux favoris', Colors.orange);
   }
 
   void _handleRepost(StatusCubit cubit, Status status) async {
@@ -514,8 +219,8 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16.r),
-        child: Container(
+        borderRadius: BorderRadius.circular(8.r),
+        child: Padding(
           padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -533,12 +238,112 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
                   fontSize: 10.sp,
                   fontWeight: FontWeight.w500,
                 ),
-                textAlign: TextAlign.center,
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _showActionFeedback(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              LucideIcons.circleCheck,
+              color: Colors.white,
+              size: 16.sp,
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              message,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: color,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+      ),
+    );
+  }
+}
+
+class _VideoPlayerWidget extends StatefulWidget {
+  const _VideoPlayerWidget({required this.status});
+
+  final Status status;
+
+  @override
+  State<_VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
+}
+
+class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
+  VideoPlayerController? _videoPlayerController;
+  ChewieController? _chewieController;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeVideo();
+  }
+
+  Future<void> _initializeVideo() async {
+    try {
+      _videoPlayerController =
+          VideoPlayerController.file(File(widget.status.path));
+      await _videoPlayerController!.initialize();
+
+      if (mounted) {
+        _chewieController = ChewieController(
+          videoPlayerController: _videoPlayerController!,
+          autoPlay: false,
+          looping: false,
+          showControls: true,
+          materialProgressColors: ChewieProgressColors(
+            playedColor: Colors.blue,
+            handleColor: Colors.blue,
+            backgroundColor: Colors.grey,
+            bufferedColor: Colors.lightBlue,
+          ),
+        );
+
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isInitialized = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _videoPlayerController?.dispose();
+    _chewieController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _isInitialized && _chewieController != null
+        ? Chewie(controller: _chewieController!)
+        : const Center(
+            child: CircularProgressIndicator(),
+          );
   }
 }

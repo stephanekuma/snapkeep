@@ -83,18 +83,21 @@ class _StatusActionState extends State<StatusAction> {
 
                     await _checkStoredStatus();
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor: _isStored ? Colors.red : kPrimaryColor,
-                        content: Text(
-                          message,
-                          style: TextStyle(
-                            color: kWhiteColor,
-                            fontSize: 14.sp,
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor:
+                              _isStored ? Colors.red : kPrimaryColor,
+                          content: Text(
+                            message,
+                            style: TextStyle(
+                              color: kWhiteColor,
+                              fontSize: 14.sp,
+                            ),
                           ),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   },
                   icon: Icon(
                     _isStored ? LucideIcons.check : LucideIcons.download,
