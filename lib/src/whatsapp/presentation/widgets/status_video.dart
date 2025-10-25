@@ -122,7 +122,7 @@ class _StatusVideoState extends State<StatusVideo> {
       setState(() {
         _isStored = true;
       });
-      _showActionFeedback('Video saved', Colors.green);
+      _showActionFeedback('Vidéo sauvegardée', Colors.green);
     }
   }
 
@@ -210,7 +210,7 @@ class _StatusVideoState extends State<StatusVideo> {
     setState(() {
       _isStored = false;
     });
-    _showActionFeedback('Video deleted', Colors.red);
+    _showActionFeedback('Vidéo supprimée', Colors.red);
   }
 
   void _showActionFeedback(String message, Color color) {

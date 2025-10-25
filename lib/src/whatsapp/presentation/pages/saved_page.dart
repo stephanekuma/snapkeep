@@ -130,7 +130,7 @@ class _SavedPageState extends State<SavedPage> {
                   Text(
                     _currentFilter != FilterOptions.all
                         ? 'Aucun résultat trouvé'
-                        : 'No saved statuses found',
+                        : 'Aucun statut sauvegardé',
                     style: TextStyle(
                       fontSize: 20.sp,
                       fontWeight: FontWeight.w300,

@@ -99,7 +99,7 @@ class _StatusImageState extends State<StatusImage> {
       setState(() {
         _isStored = true;
       });
-      _showActionFeedback('Image saved', Colors.green);
+      _showActionFeedback('Image sauvegardée', Colors.green);
     }
   }
 
@@ -187,7 +187,7 @@ class _StatusImageState extends State<StatusImage> {
     setState(() {
       _isStored = false;
     });
-    _showActionFeedback('Image deleted', Colors.red);
+    _showActionFeedback('Image supprimée', Colors.red);
   }
 
   void _showActionFeedback(String message, Color color) {

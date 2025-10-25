@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'dart:async';
 import 'package:snapkeep/src/core/router/index.dart';
@@ -96,20 +96,20 @@ class _StatusPageState extends State<StatusPage> {
                 tabs: const <Tab>[
                   Tab(
                     child: TabItem(
-                      icon: FontAwesomeIcons.images,
+                      icon: LucideIcons.image,
                       text: 'Images',
                     ),
                   ),
                   Tab(
                     child: TabItem(
-                      icon: FontAwesomeIcons.photoFilm,
-                      text: 'Videos',
+                      icon: LucideIcons.video,
+                      text: 'Vidéos',
                     ),
                   ),
                   Tab(
                     child: TabItem(
-                      icon: FontAwesomeIcons.download,
-                      text: 'Saved',
+                      icon: LucideIcons.download,
+                      text: 'Sauv.',
                     ),
                   ),
                 ],
@@ -138,8 +138,8 @@ class _StatusPageState extends State<StatusPage> {
             ),
           ],
         ),
-        child: FaIcon(
-          FontAwesomeIcons.filter,
+        child: Icon(
+          LucideIcons.slidersHorizontal,
           color: Colors.white,
           size: 16.sp,
         ),
@@ -160,22 +160,22 @@ class _StatusPageState extends State<StatusPage> {
       },
       itemBuilder: (context) => [
         _buildFilterMenuItem(
-          icon: FontAwesomeIcons.list,
+          icon: LucideIcons.list,
           title: 'Tous',
           value: FilterOptions.all,
         ),
         _buildFilterMenuItem(
-          icon: FontAwesomeIcons.images,
+          icon: LucideIcons.image,
           title: 'Images seulement',
           value: FilterOptions.images,
         ),
         _buildFilterMenuItem(
-          icon: FontAwesomeIcons.photoFilm,
+          icon: LucideIcons.video,
           title: 'Vidéos seulement',
           value: FilterOptions.videos,
         ),
         _buildFilterMenuItem(
-          icon: FontAwesomeIcons.file,
+          icon: LucideIcons.file,
           title: 'Fichiers volumineux',
           value: FilterOptions.large,
         ),
@@ -200,7 +200,7 @@ class _StatusPageState extends State<StatusPage> {
                 color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
-              child: FaIcon(
+              child: Icon(
                 icon,
                 color: Colors.blue,
                 size: 16.sp,

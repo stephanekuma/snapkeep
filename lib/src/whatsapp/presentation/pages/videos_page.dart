@@ -79,7 +79,7 @@ class _VideosPageState extends State<VideosPage> {
                 children: <Widget>[
                   Image.asset('assets/images/errors/empty.png'),
                   Text(
-                    'No videos found',
+                    'Aucune vidéo trouvée',
                     style: TextStyle(
                       fontSize: 20.sp,
                       fontWeight: FontWeight.w300,

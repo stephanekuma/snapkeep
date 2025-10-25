@@ -77,7 +77,7 @@ class _ImagesPageState extends State<ImagesPage> {
                 children: <Widget>[
                   Image.asset('assets/images/errors/empty.png'),
                   Text(
-                    'No images found',
+                    'Aucune image trouvée',
                     style: TextStyle(
                       fontSize: 20.sp,
                       fontWeight: FontWeight.w300,
