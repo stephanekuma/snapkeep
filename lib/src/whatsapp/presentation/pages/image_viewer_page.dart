@@ -152,13 +152,8 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
         },
         child: InteractiveViewer(
           child: Center(
-            child: Hero(
-              tag: widget.isStored
-                  ? 'saved-${widget.status.path}'
-                  : widget.status.path,
-              child: Image.file(
-                File(widget.status.path),
-              ),
+            child: Image.file(
+              File(widget.status.path),
             ),
           ),
         ),

@@ -12,12 +12,14 @@ import 'package:snapkeep/src/whatsapp/presentation/cubit/status_cubit.dart';
 import 'src/core/router/index.dart';
 import 'src/whatsapp/presentation/bloc/status_bloc.dart';
 
-void main()async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   configureDependencies();
   HydratedBloc.storage = await HydratedStorage.build(
-    storageDirectory: await getApplicationDocumentsDirectory(),
+    storageDirectory: HydratedStorageDirectory(
+      (await getApplicationDocumentsDirectory()).path,
+    ),
   );
 
   runApp(MyApp());

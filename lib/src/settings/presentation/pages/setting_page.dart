@@ -99,6 +99,29 @@ class SettingPage extends StatelessWidget {
                 ),
                 ListTile(
                   onTap: () {
+                    context.router.push(const StorageSettingsRoute());
+                  },
+                  leading: FaIcon(
+                    FontAwesomeIcons.hardDrive,
+                    size: 25.sp,
+                  ),
+                  title: Text(
+                    "Stockage",
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  trailing: RotatedBox(
+                    quarterTurns: 2,
+                    child: Icon(
+                      Icons.arrow_back_ios,
+                      size: 25.sp,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  onTap: () {
                     ScaffoldMessenger.of(context).clearSnackBars();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

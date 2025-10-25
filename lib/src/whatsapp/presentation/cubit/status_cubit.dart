@@ -59,7 +59,11 @@ class StatusCubit extends Cubit<StatusState> {
       final File file = File(status.path);
 
       if (await file.exists()) {
-        await Share.shareXFiles([XFile(file.path)]);
+        await SharePlus.instance.share(
+          ShareParams(
+            files: [XFile(file.path)],
+          ),
+        );
       } else {
         emit(
           const StatusActionFailure(message: 'Source file not found.'),

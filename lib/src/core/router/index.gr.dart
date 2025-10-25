@@ -1,3 +1,4 @@
+// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 // **************************************************************************
@@ -18,14 +19,14 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
     bool isStored = false,
     List<PageRouteInfo>? children,
   }) : super(
-          ImageViewerRoute.name,
-          args: ImageViewerRouteArgs(
-            key: key,
-            status: status,
-            isStored: isStored,
-          ),
-          initialChildren: children,
-        );
+         ImageViewerRoute.name,
+         args: ImageViewerRouteArgs(
+           key: key,
+           status: status,
+           isStored: isStored,
+         ),
+         initialChildren: children,
+       );
 
   static const String name = 'ImageViewerRoute';
 
@@ -65,10 +66,7 @@ class ImageViewerRouteArgs {
 /// [ImagesPage]
 class ImagesRoute extends PageRouteInfo<void> {
   const ImagesRoute({List<PageRouteInfo>? children})
-      : super(
-          ImagesRoute.name,
-          initialChildren: children,
-        );
+    : super(ImagesRoute.name, initialChildren: children);
 
   static const String name = 'ImagesRoute';
 
@@ -84,10 +82,7 @@ class ImagesRoute extends PageRouteInfo<void> {
 /// [LightingModePage]
 class LightingModeRoute extends PageRouteInfo<void> {
   const LightingModeRoute({List<PageRouteInfo>? children})
-      : super(
-          LightingModeRoute.name,
-          initialChildren: children,
-        );
+    : super(LightingModeRoute.name, initialChildren: children);
 
   static const String name = 'LightingModeRoute';
 
@@ -103,10 +98,7 @@ class LightingModeRoute extends PageRouteInfo<void> {
 /// [SavedPage]
 class SavedRoute extends PageRouteInfo<void> {
   const SavedRoute({List<PageRouteInfo>? children})
-      : super(
-          SavedRoute.name,
-          initialChildren: children,
-        );
+    : super(SavedRoute.name, initialChildren: children);
 
   static const String name = 'SavedRoute';
 
@@ -122,10 +114,7 @@ class SavedRoute extends PageRouteInfo<void> {
 /// [SettingPage]
 class SettingRoute extends PageRouteInfo<void> {
   const SettingRoute({List<PageRouteInfo>? children})
-      : super(
-          SettingRoute.name,
-          initialChildren: children,
-        );
+    : super(SettingRoute.name, initialChildren: children);
 
   static const String name = 'SettingRoute';
 
@@ -141,10 +130,7 @@ class SettingRoute extends PageRouteInfo<void> {
 /// [StatusPage]
 class StatusRoute extends PageRouteInfo<void> {
   const StatusRoute({List<PageRouteInfo>? children})
-      : super(
-          StatusRoute.name,
-          initialChildren: children,
-        );
+    : super(StatusRoute.name, initialChildren: children);
 
   static const String name = 'StatusRoute';
 
@@ -152,6 +138,22 @@ class StatusRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const StatusPage();
+    },
+  );
+}
+
+/// generated route for
+/// [StorageSettingsPage]
+class StorageSettingsRoute extends PageRouteInfo<void> {
+  const StorageSettingsRoute({List<PageRouteInfo>? children})
+    : super(StorageSettingsRoute.name, initialChildren: children);
+
+  static const String name = 'StorageSettingsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const StorageSettingsPage();
     },
   );
 }
@@ -165,14 +167,14 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
     bool isStored = false,
     List<PageRouteInfo>? children,
   }) : super(
-          VideoViewerRoute.name,
-          args: VideoViewerRouteArgs(
-            key: key,
-            status: status,
-            isStored: isStored,
-          ),
-          initialChildren: children,
-        );
+         VideoViewerRoute.name,
+         args: VideoViewerRouteArgs(
+           key: key,
+           status: status,
+           isStored: isStored,
+         ),
+         initialChildren: children,
+       );
 
   static const String name = 'VideoViewerRoute';
 
@@ -212,10 +214,7 @@ class VideoViewerRouteArgs {
 /// [VideosPage]
 class VideosRoute extends PageRouteInfo<void> {
   const VideosRoute({List<PageRouteInfo>? children})
-      : super(
-          VideosRoute.name,
-          initialChildren: children,
-        );
+    : super(VideosRoute.name, initialChildren: children);
 
   static const String name = 'VideosRoute';
 

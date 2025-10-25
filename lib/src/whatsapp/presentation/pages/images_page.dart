@@ -5,11 +5,25 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:snapkeep/src/core/widgets/loader.dart';
 import 'package:snapkeep/src/whatsapp/presentation/bloc/status_bloc.dart';
-import 'package:snapkeep/src/whatsapp/presentation/widgets/status_image.dart';
+import 'package:snapkeep/src/whatsapp/domain/entities/status.dart';
+import 'package:snapkeep/src/whatsapp/presentation/widgets/selectable_media_grid.dart';
 
 @RoutePage()
-class ImagesPage extends StatelessWidget {
+class ImagesPage extends StatefulWidget {
   const ImagesPage({super.key});
+
+  @override
+  State<ImagesPage> createState() => _ImagesPageState();
+}
+
+class _ImagesPageState extends State<ImagesPage> {
+  List<Status> _filteredStatuses = [];
+
+  void _updateStatuses(List<Status> statuses) {
+    setState(() {
+      _filteredStatuses = statuses;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +65,12 @@ class ImagesPage extends StatelessWidget {
           }
 
           if (state is StatusLoaded) {
-            if (state.statuses.isEmpty) {
+            // Update statuses
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _updateStatuses(state.statuses);
+            });
+
+            if (_filteredStatuses.isEmpty) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -67,20 +86,9 @@ class ImagesPage extends StatelessWidget {
                 ],
               );
             } else {
-              return GridView.builder(
-                padding: EdgeInsets.all(8.r),
-                physics: const BouncingScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10.r,
-                  mainAxisSpacing: 10.r,
-                  childAspectRatio: 1,
-                ),
-                itemCount: state.statuses.length,
-                itemBuilder: (context, index) {
-                  final status = state.statuses[index];
-                  return StatusImage(status: status);
-                },
+              return SelectableMediaGrid(
+                statuses: _filteredStatuses,
+                isStored: false,
               );
             }
           }

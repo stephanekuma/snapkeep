@@ -30,9 +30,7 @@ class StatusImage extends StatelessWidget {
           ),
         );
       },
-      child: Hero(
-        tag: isStored ? 'saved-${status.path}' : status.path,
-        child: Container(
+      child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(8.r),
@@ -56,7 +54,6 @@ class StatusImage extends StatelessWidget {
             isStored: isStored,
           ),
         ),
-      ),
     );
   }
 }

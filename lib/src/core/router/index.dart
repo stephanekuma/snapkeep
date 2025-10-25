@@ -25,38 +25,44 @@ class AppRouter extends RootStackRouter {
             CustomRoute(
               page: ImagesRoute.page,
               transitionsBuilder: TransitionsBuilders.fadeIn,
-              durationInMilliseconds: 500,
+              duration: const Duration(milliseconds: 500),
             ),
             CustomRoute(
               page: VideosRoute.page,
               transitionsBuilder: TransitionsBuilders.fadeIn,
-              durationInMilliseconds: 500,
+              duration: const Duration(milliseconds: 500),
             ),
             CustomRoute(
               page: SavedRoute.page,
               transitionsBuilder: TransitionsBuilders.fadeIn,
-              durationInMilliseconds: 500,
+              duration: const Duration(milliseconds: 500),
             ),
           ],
         ),
         CustomRoute(
           page: ImageViewerRoute.page,
           transitionsBuilder: TransitionsBuilders.fadeIn,
-          durationInMilliseconds: 500,
+          duration: const Duration(milliseconds: 500),
         ),
         CustomRoute(
           page: VideoViewerRoute.page,
           transitionsBuilder: TransitionsBuilders.fadeIn,
-          durationInMilliseconds: 500,
+          duration: const Duration(milliseconds: 500),
         ),
         CustomRoute(
           page: SettingRoute.page,
           transitionsBuilder: TransitionsBuilders.fadeIn,
-          durationInMilliseconds: 500,
-        ),CustomRoute(
+          duration: const Duration(milliseconds: 500),
+        ),
+        CustomRoute(
           page: LightingModeRoute.page,
           transitionsBuilder: TransitionsBuilders.fadeIn,
-          durationInMilliseconds: 500,
+          duration: const Duration(milliseconds: 500),
+        ),
+        CustomRoute(
+          page: StorageSettingsRoute.page,
+          transitionsBuilder: TransitionsBuilders.fadeIn,
+          duration: const Duration(milliseconds: 500),
         ),
       ];
 }

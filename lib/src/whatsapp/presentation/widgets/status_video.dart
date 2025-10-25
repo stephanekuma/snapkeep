@@ -13,7 +13,7 @@ import 'package:snapkeep/src/whatsapp/domain/entities/status.dart';
 import 'package:snapkeep/src/whatsapp/presentation/cubit/status_cubit.dart';
 import 'package:snapkeep/src/whatsapp/presentation/widgets/status_action.dart';
 
-class StatusVideo extends StatelessWidget {
+class StatusVideo extends StatefulWidget {
   const StatusVideo({
     super.key,
     required this.status,
@@ -24,68 +24,91 @@ class StatusVideo extends StatelessWidget {
   final bool isStored;
 
   @override
-  Widget build(BuildContext context) {
-    final cubit = context.read<StatusCubit>();
+  State<StatusVideo> createState() => _StatusVideoState();
+}
 
+class _StatusVideoState extends State<StatusVideo> {
+  String? _thumbnailPath;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThumbnail();
+  }
+
+  Future<void> _loadThumbnail() async {
+    try {
+      final cubit = context.read<StatusCubit>();
+      final thumbnailPath = await cubit.thumbnail(path: widget.status.path);
+      if (mounted) {
+        setState(() {
+          _thumbnailPath = thumbnailPath;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         context.router.push(
           VideoViewerRoute(
-            status: status,
-            isStored: isStored,
+            status: widget.status,
+            isStored: widget.isStored,
           ),
         );
       },
-      child: FutureBuilder<String>(
-        future: cubit.thumbnail(path: status.path),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Loader();
-          }
-
-          return snapshot.hasData && snapshot.data != null
-              ? Hero(
-                  tag: isStored
-                      ? 'saved-video-${status.path}'
-                      : 'video-${status.path}',
-                  child: Stack(
-                    children: <Widget>[
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8.r),
-                          boxShadow: <BoxShadow>[
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              spreadRadius: 2.r,
-                              blurRadius: 6.r,
-                              offset: Offset(0, 3.h),
-                            ),
-                          ],
-                          image: DecorationImage(
-                            image: FileImage(
-                              File(snapshot.data!),
-                            ),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        child: StatusAction(
-                          status: status,
-                          isStored: isStored,
-                        ),
-                      ),
-                      Center(
-                        child: FaIcon(
-                          FontAwesomeIcons.play,
-                          color: Colors.white,
-                          size: 35.sp,
-                        ),
-                      ),
-                    ],
-                  ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8.r),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              spreadRadius: 2.r,
+              blurRadius: 6.r,
+              offset: Offset(0, 3.h),
+            ),
+          ],
+          image: _thumbnailPath != null && _thumbnailPath!.isNotEmpty
+              ? DecorationImage(
+                  image: FileImage(File(_thumbnailPath!)),
+                  fit: BoxFit.cover,
                 )
-              : const Loader();
-        },
+              : const DecorationImage(
+                  image: AssetImage('assets/images/errors/empty.png'),
+                  fit: BoxFit.cover,
+                ),
+        ),
+        child: Stack(
+          children: [
+            StatusAction(
+              status: widget.status,
+              isStored: widget.isStored,
+            ),
+            if (_isLoading)
+              const Center(
+                child: Loader(),
+              )
+            else
+              Center(
+                child: FaIcon(
+                  FontAwesomeIcons.play,
+                  color: Colors.white,
+                  size: 35.sp,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
