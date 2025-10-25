@@ -102,4 +102,18 @@ class StatusCubit extends Cubit<StatusState> {
       );
     }
   }
+
+  Future<bool> isStored({required String path}) async {
+    try {
+      final Directory directory = Directory(kStoredWhatsAppPath);
+      final File file = File(path);
+      final String fileName = file.uri.pathSegments.last;
+      final String storedFilePath = '${directory.path}/$fileName';
+      final File storedFile = File(storedFilePath);
+
+      return await storedFile.exists();
+    } catch (e) {
+      return false;
+    }
+  }
 }

@@ -33,10 +33,12 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
   VideoPlayerController? videoPlayerController;
   ChewieController? chewieController;
   bool _isInitialized = false;
+  bool _isStored = false;
 
   @override
   void initState() {
     super.initState();
+    _checkStoredStatus();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -212,9 +214,22 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
     _showActionFeedback('Partage en cours...', Colors.blue);
   }
 
-  void _handleSave(StatusCubit cubit) {
-    cubit.store(status: widget.status);
-    _showActionFeedback('Vidéo sauvegardée', Colors.green);
+  Future<void> _checkStoredStatus() async {
+    final cubit = context.read<StatusCubit>();
+    final isStored = await cubit.isStored(path: widget.status.path);
+    if (mounted) {
+      setState(() {
+        _isStored = isStored;
+      });
+    }
+  }
+
+  void _handleSave(StatusCubit cubit) async {
+    if (!_isStored) {
+      cubit.store(status: widget.status);
+      await _checkStoredStatus();
+      _showActionFeedback('Vidéo sauvegardée', Colors.green);
+    }
   }
 
   void _showActionFeedback(String message, Color color) {
@@ -425,8 +440,8 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
             color: Colors.green,
           ),
           _buildBottomActionButton(
-            icon: LucideIcons.download,
-            label: 'Sauvegarder',
+            icon: _isStored ? LucideIcons.check : LucideIcons.download,
+            label: _isStored ? 'Sauvegardé' : 'Sauvegarder',
             onTap: () => _handleSave(cubit),
             color: Colors.orange,
           ),

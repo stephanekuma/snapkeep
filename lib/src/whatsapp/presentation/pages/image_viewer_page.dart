@@ -28,9 +28,12 @@ class ImageViewerPage extends StatefulWidget {
 }
 
 class _ImageViewerPageState extends State<ImageViewerPage> {
+  bool _isStored = false;
+
   @override
   void initState() {
     super.initState();
+    _checkStoredStatus();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -250,8 +253,8 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
             color: Colors.green,
           ),
           _buildBottomActionButton(
-            icon: LucideIcons.download,
-            label: 'Sauvegarder',
+            icon: _isStored ? LucideIcons.check : LucideIcons.download,
+            label: _isStored ? 'Sauvegardé' : 'Sauvegarder',
             onTap: () => _handleSave(cubit),
             color: Colors.orange,
           ),
@@ -298,9 +301,22 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     );
   }
 
-  void _handleSave(StatusCubit cubit) {
-    cubit.store(status: widget.status);
-    _showActionFeedback('Image sauvegardée', Colors.orange);
+  Future<void> _checkStoredStatus() async {
+    final cubit = context.read<StatusCubit>();
+    final isStored = await cubit.isStored(path: widget.status.path);
+    if (mounted) {
+      setState(() {
+        _isStored = isStored;
+      });
+    }
+  }
+
+  void _handleSave(StatusCubit cubit) async {
+    if (!_isStored) {
+      cubit.store(status: widget.status);
+      await _checkStoredStatus();
+      _showActionFeedback('Image sauvegardée', Colors.orange);
+    }
   }
 }
 

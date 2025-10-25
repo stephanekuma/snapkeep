@@ -9,7 +9,7 @@ import 'package:snapkeep/src/whatsapp/presentation/bloc/status_bloc.dart';
 import 'package:snapkeep/src/whatsapp/presentation/cubit/status_cubit.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-class StatusAction extends StatelessWidget {
+class StatusAction extends StatefulWidget {
   const StatusAction({
     super.key,
     required this.status,
@@ -18,6 +18,30 @@ class StatusAction extends StatelessWidget {
 
   final Status status;
   final bool isStored;
+
+  @override
+  State<StatusAction> createState() => _StatusActionState();
+}
+
+class _StatusActionState extends State<StatusAction> {
+  bool _isStored = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isStored = widget.isStored;
+    _checkStoredStatus();
+  }
+
+  Future<void> _checkStoredStatus() async {
+    final cubit = context.read<StatusCubit>();
+    final isStored = await cubit.isStored(path: widget.status.path);
+    if (mounted) {
+      setState(() {
+        _isStored = isStored;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,26 +65,27 @@ class StatusAction extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 IconButton(
-                  onPressed: () {
+                  onPressed: () async {
                     String message = '';
 
-                    if (!status.isVideo) {
-                      message = isStored ? 'Image deleted' : 'Image saved';
+                    if (!widget.status.isVideo) {
+                      message = _isStored ? 'Image deleted' : 'Image saved';
                     } else {
-                      message = isStored ? 'Video deleted' : 'Video saved';
+                      message = _isStored ? 'Video deleted' : 'Video saved';
                     }
 
-                    if (isStored) {
-                      cubit.destroy(path: status.path);
-
+                    if (_isStored) {
+                      cubit.destroy(path: widget.status.path);
                       context.read<StatusBloc>().add(FetchStoredStatuses());
                     } else {
-                      cubit.store(status: status);
+                      cubit.store(status: widget.status);
                     }
+
+                    await _checkStoredStatus();
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        backgroundColor: isStored ? Colors.red : kPrimaryColor,
+                        backgroundColor: _isStored ? Colors.red : kPrimaryColor,
                         content: Text(
                           message,
                           style: TextStyle(
@@ -72,14 +97,14 @@ class StatusAction extends StatelessWidget {
                     );
                   },
                   icon: Icon(
-                    isStored ? LucideIcons.trash2 : LucideIcons.download,
+                    _isStored ? LucideIcons.check : LucideIcons.download,
                     color: kWhiteColor,
                     size: 25.sp,
                   ),
                 ),
                 IconButton(
                   onPressed: () {
-                    cubit.share(status: status);
+                    cubit.share(status: widget.status);
                   },
                   icon: Icon(
                     LucideIcons.share2,
