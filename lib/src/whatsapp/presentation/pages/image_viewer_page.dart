@@ -57,22 +57,6 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
         _checkStoredStatus();
       });
     }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: kDarkColor,
-          content: Text(
-            'Pinch to zoom\nDouble tap to save or share',
-            style: TextStyle(
-              color: kWhiteColor,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      );
-    });
   }
 
   @override

@@ -56,21 +56,6 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
         _checkStoredStatus();
       });
     }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: kDarkColor,
-          content: Text(
-            'Pinch to zoom\nDouble tap to save or share',
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      );
-    });
   }
 
   @override
