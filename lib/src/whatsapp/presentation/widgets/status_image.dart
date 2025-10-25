@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'package:snapkeep/src/core/constants/colors.dart';
 import 'package:snapkeep/src/whatsapp/domain/entities/status.dart';
 import 'package:snapkeep/src/whatsapp/presentation/cubit/status_cubit.dart';
 import 'package:snapkeep/src/whatsapp/presentation/bloc/status_bloc.dart';
@@ -123,19 +122,39 @@ class _StatusImageState extends State<StatusImage> {
     });
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: _isStored ? Colors.red : kPrimaryColor,
-          content: Text(
-            message,
-            style: TextStyle(
-              color: kWhiteColor,
-              fontSize: 14.sp,
-            ),
-          ),
-        ),
-      );
+      _showActionFeedback(message, widget.isStored ? Colors.red : Colors.green);
     }
+  }
+
+  void _showActionFeedback(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              LucideIcons.circleCheck,
+              color: Colors.white,
+              size: 16.sp,
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              message,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: color,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+      ),
+    );
   }
 
   @override
