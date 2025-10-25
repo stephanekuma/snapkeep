@@ -79,7 +79,7 @@ class _SelectableMediaGridState extends State<SelectableMediaGrid> {
           child: GridView.builder(
             padding: EdgeInsets.all(8.w),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
+              crossAxisCount: 3,
               crossAxisSpacing: 8.w,
               mainAxisSpacing: 8.h,
             ),

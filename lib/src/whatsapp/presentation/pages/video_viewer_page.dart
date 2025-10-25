@@ -177,7 +177,7 @@ class _VideoViewerPageState extends State<VideoViewerPage> {
       context.read<StatusBloc>().add(FetchStoredStatuses());
       _showActionFeedback('Vidéo supprimée', Colors.red);
     } else {
-      // Pages Images/Videos - sauvegarder le statut
+      // Pages Images/Videos - statut non sauvegardé - sauvegarder le statut
       cubit.store(status: status);
       setState(() {
         _isStored = true;

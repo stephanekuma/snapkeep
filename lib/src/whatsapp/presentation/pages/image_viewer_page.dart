@@ -452,7 +452,7 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
       context.read<StatusBloc>().add(FetchStoredStatuses());
       _showActionFeedback('Image supprimée', Colors.red);
     } else {
-      // Pages Images/Videos - sauvegarder le statut
+      // Pages Images/Videos - statut non sauvegardé - sauvegarder le statut
       cubit.store(status: status);
       setState(() {
         _isStored = true;

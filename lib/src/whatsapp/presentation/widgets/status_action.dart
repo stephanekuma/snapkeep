@@ -125,7 +125,7 @@ class _StatusActionState extends State<StatusAction> {
                           ? 'Image deleted'
                           : 'Video deleted';
                     } else {
-                      // Pages Images/Videos - sauvegarder le statut
+                      // Pages Images/Videos - statut non sauvegardé - sauvegarder le statut
                       cubit.store(status: widget.status);
                       message = !widget.status.isVideo
                           ? 'Image saved'
