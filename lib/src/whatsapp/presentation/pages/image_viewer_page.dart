@@ -87,13 +87,13 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black.withValues(alpha: 0.8),
+        backgroundColor: kPrimaryColor,
         elevation: 0,
         title: Text(
           'Snap Keep',
           style: TextStyle(
             fontSize: 22.sp,
-            color: Colors.white,
+            color: kWhiteColor,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -328,7 +328,7 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.9),
+        color: kPrimaryColor,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
