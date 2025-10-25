@@ -76,62 +76,82 @@ class _SelectableMediaGridState extends State<SelectableMediaGrid> {
             isStored: widget.isStored,
           ),
         Expanded(
-          child: GridView.builder(
-            padding: EdgeInsets.all(8.w),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 8.w,
-              mainAxisSpacing: 8.h,
-            ),
-            itemCount: widget.statuses.length,
-            itemBuilder: (context, index) {
-              final status = widget.statuses[index];
-              final isSelected = _selectedItems.contains(status.path);
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final screenWidth = MediaQuery.of(context).size.width;
 
-              return GestureDetector(
-                onLongPress: () {
-                  if (!_isSelectionMode) {
-                    _enterSelectionMode();
-                    _toggleSelection(status.path);
-                  }
-                },
-                onTap: () {
-                  if (_isSelectionMode) {
-                    _toggleSelection(status.path);
-                  } else {
-                    // Navigation normale vers le viewer
-                    _navigateToViewer(status);
-                  }
-                },
-                child: Stack(
-                  children: [
-                    // Media widget
-                    status.isVideo
-                        ? StatusVideo(status: status, isStored: widget.isStored)
-                        : StatusImage(
-                            status: status, isStored: widget.isStored),
+              // Calculer le nombre de colonnes basé sur la taille de l'écran
+              int crossAxisCount = 3;
 
-                    // Selection overlay
-                    if (_isSelectionMode)
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Colors.blue.withValues(alpha: 0.3)
-                                : Colors.black.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                          child: isSelected
-                              ? Icon(
-                                  Icons.check_circle,
-                                  color: Colors.blue,
-                                  size: 30.sp,
-                                )
-                              : null,
-                        ),
-                      ),
-                  ],
+              if (screenWidth > 600) {
+                crossAxisCount = 4;
+              }
+              if (screenWidth > 900) {
+                crossAxisCount = 5;
+              }
+              if (screenWidth > 1200) {
+                crossAxisCount = 6;
+              }
+
+              return GridView.builder(
+                padding: EdgeInsets.all(8.w),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 8.w,
+                  mainAxisSpacing: 8.h,
                 ),
+                itemCount: widget.statuses.length,
+                itemBuilder: (context, index) {
+                  final status = widget.statuses[index];
+                  final isSelected = _selectedItems.contains(status.path);
+
+                  return GestureDetector(
+                    onLongPress: () {
+                      if (!_isSelectionMode) {
+                        _enterSelectionMode();
+                        _toggleSelection(status.path);
+                      }
+                    },
+                    onTap: () {
+                      if (_isSelectionMode) {
+                        _toggleSelection(status.path);
+                      } else {
+                        // Navigation normale vers le viewer
+                        _navigateToViewer(status);
+                      }
+                    },
+                    child: Stack(
+                      children: [
+                        // Media widget
+                        status.isVideo
+                            ? StatusVideo(
+                                status: status, isStored: widget.isStored)
+                            : StatusImage(
+                                status: status, isStored: widget.isStored),
+
+                        // Selection overlay
+                        if (_isSelectionMode)
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? Colors.blue.withValues(alpha: 0.3)
+                                    : Colors.black.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
+                              child: isSelected
+                                  ? Icon(
+                                      Icons.check_circle,
+                                      color: Colors.blue,
+                                      size: 30.sp,
+                                    )
+                                  : null,
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
               );
             },
           ),
