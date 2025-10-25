@@ -113,40 +113,104 @@ class _StatusVideoState extends State<StatusVideo> {
       return; // Ne rien faire - comportement voulu
     }
 
-    String message = '';
-
     if (widget.isStored) {
-      // Page Saved - supprimer le statut sauvegardé
-      cubit.destroy(path: widget.status.path);
-      context.read<StatusBloc>().add(FetchStoredStatuses());
-      message = 'Video deleted';
+      // Page Saved - afficher modal de confirmation pour suppression
+      _showDeleteConfirmation(cubit);
     } else {
-      // Pages Images/Videos - sauvegarder le statut
+      // Pages Images/Videos - sauvegarder le statut directement
       cubit.store(status: widget.status);
-      message = 'Video saved';
-    }
-
-    // Mettre à jour l'état immédiatement
-    setState(() {
-      if (widget.isStored) {
-        // Page Saved - on supprime, donc _isStored devient false
-        _isStored = false;
-      } else {
-        // Pages Images/Videos - on sauvegarde, donc _isStored devient true
+      setState(() {
         _isStored = true;
-      }
-    });
-
-    // Vérifier l'état réel après un court délai
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        _checkStoredStatus();
-      }
-    });
-
-    if (mounted) {
-      _showActionFeedback(message, widget.isStored ? Colors.red : Colors.green);
+      });
+      _showActionFeedback('Video saved', Colors.green);
     }
+  }
+
+  void _showDeleteConfirmation(StatusCubit cubit) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        padding: EdgeInsets.all(20.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              LucideIcons.trash2,
+              color: Colors.red,
+              size: 48.sp,
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'Supprimer la vidéo ?',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Cette action est irréversible',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(height: 24.h),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[300],
+                      foregroundColor: Colors.black87,
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                    ),
+                    child: Text('Annuler'),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _confirmDelete(cubit);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                    ),
+                    child: Text('Supprimer'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmDelete(StatusCubit cubit) {
+    cubit.destroy(path: widget.status.path);
+    context.read<StatusBloc>().add(FetchStoredStatuses());
+    setState(() {
+      _isStored = false;
+    });
+    _showActionFeedback('Video deleted', Colors.red);
   }
 
   void _showActionFeedback(String message, Color color) {
