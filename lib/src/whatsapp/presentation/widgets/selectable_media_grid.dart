@@ -202,11 +202,15 @@ class _SelectableMediaGridState extends State<SelectableMediaGrid> {
   }
 
   void _navigateToViewer(Status status) {
+    final currentIndex = widget.statuses.indexOf(status);
+
     if (status.isVideo) {
       context.router.push(
         VideoViewerRoute(
           status: status,
           isStored: widget.isStored,
+          allStatuses: widget.statuses,
+          currentIndex: currentIndex,
         ),
       );
     } else {
@@ -214,6 +218,8 @@ class _SelectableMediaGridState extends State<SelectableMediaGrid> {
         ImageViewerRoute(
           status: status,
           isStored: widget.isStored,
+          allStatuses: widget.statuses,
+          currentIndex: currentIndex,
         ),
       );
     }

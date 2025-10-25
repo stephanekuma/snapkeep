@@ -17,16 +17,20 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
     Key? key,
     required Status status,
     bool isStored = false,
+    List<Status> allStatuses = const [],
+    int currentIndex = 0,
     List<PageRouteInfo>? children,
   }) : super(
-         ImageViewerRoute.name,
-         args: ImageViewerRouteArgs(
-           key: key,
-           status: status,
-           isStored: isStored,
-         ),
-         initialChildren: children,
-       );
+          ImageViewerRoute.name,
+          args: ImageViewerRouteArgs(
+            key: key,
+            status: status,
+            isStored: isStored,
+            allStatuses: allStatuses,
+            currentIndex: currentIndex,
+          ),
+          initialChildren: children,
+        );
 
   static const String name = 'ImageViewerRoute';
 
@@ -38,6 +42,8 @@ class ImageViewerRoute extends PageRouteInfo<ImageViewerRouteArgs> {
         key: args.key,
         status: args.status,
         isStored: args.isStored,
+        allStatuses: args.allStatuses,
+        currentIndex: args.currentIndex,
       );
     },
   );
@@ -48,6 +54,8 @@ class ImageViewerRouteArgs {
     this.key,
     required this.status,
     this.isStored = false,
+    this.allStatuses = const [],
+    this.currentIndex = 0,
   });
 
   final Key? key;
@@ -56,17 +64,40 @@ class ImageViewerRouteArgs {
 
   final bool isStored;
 
+  final List<Status> allStatuses;
+
+  final int currentIndex;
+
   @override
   String toString() {
-    return 'ImageViewerRouteArgs{key: $key, status: $status, isStored: $isStored}';
+    return 'ImageViewerRouteArgs{key: $key, status: $status, isStored: $isStored, allStatuses: $allStatuses, currentIndex: $currentIndex}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ImageViewerRouteArgs) return false;
+    return key == other.key &&
+        status == other.status &&
+        isStored == other.isStored &&
+        const ListEquality<Status>().equals(allStatuses, other.allStatuses) &&
+        currentIndex == other.currentIndex;
+  }
+
+  @override
+  int get hashCode =>
+      key.hashCode ^
+      status.hashCode ^
+      isStored.hashCode ^
+      const ListEquality<Status>().hash(allStatuses) ^
+      currentIndex.hashCode;
 }
 
 /// generated route for
 /// [ImagesPage]
 class ImagesRoute extends PageRouteInfo<void> {
   const ImagesRoute({List<PageRouteInfo>? children})
-    : super(ImagesRoute.name, initialChildren: children);
+      : super(ImagesRoute.name, initialChildren: children);
 
   static const String name = 'ImagesRoute';
 
@@ -82,7 +113,7 @@ class ImagesRoute extends PageRouteInfo<void> {
 /// [LightingModePage]
 class LightingModeRoute extends PageRouteInfo<void> {
   const LightingModeRoute({List<PageRouteInfo>? children})
-    : super(LightingModeRoute.name, initialChildren: children);
+      : super(LightingModeRoute.name, initialChildren: children);
 
   static const String name = 'LightingModeRoute';
 
@@ -96,25 +127,58 @@ class LightingModeRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [SavedPage]
-class SavedRoute extends PageRouteInfo<void> {
-  const SavedRoute({List<PageRouteInfo>? children})
-    : super(SavedRoute.name, initialChildren: children);
+class SavedRoute extends PageRouteInfo<SavedRouteArgs> {
+  SavedRoute({
+    Key? key,
+    dynamic Function(FilterOptions)? onFilterChanged,
+    List<PageRouteInfo>? children,
+  }) : super(
+          SavedRoute.name,
+          args: SavedRouteArgs(key: key, onFilterChanged: onFilterChanged),
+          initialChildren: children,
+        );
 
   static const String name = 'SavedRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const SavedPage();
+      final args = data.argsAs<SavedRouteArgs>(
+        orElse: () => const SavedRouteArgs(),
+      );
+      return SavedPage(key: args.key, onFilterChanged: args.onFilterChanged);
     },
   );
+}
+
+class SavedRouteArgs {
+  const SavedRouteArgs({this.key, this.onFilterChanged});
+
+  final Key? key;
+
+  final dynamic Function(FilterOptions)? onFilterChanged;
+
+  @override
+  String toString() {
+    return 'SavedRouteArgs{key: $key, onFilterChanged: $onFilterChanged}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! SavedRouteArgs) return false;
+    return key == other.key;
+  }
+
+  @override
+  int get hashCode => key.hashCode;
 }
 
 /// generated route for
 /// [SettingPage]
 class SettingRoute extends PageRouteInfo<void> {
   const SettingRoute({List<PageRouteInfo>? children})
-    : super(SettingRoute.name, initialChildren: children);
+      : super(SettingRoute.name, initialChildren: children);
 
   static const String name = 'SettingRoute';
 
@@ -130,7 +194,7 @@ class SettingRoute extends PageRouteInfo<void> {
 /// [StatusPage]
 class StatusRoute extends PageRouteInfo<void> {
   const StatusRoute({List<PageRouteInfo>? children})
-    : super(StatusRoute.name, initialChildren: children);
+      : super(StatusRoute.name, initialChildren: children);
 
   static const String name = 'StatusRoute';
 
@@ -146,7 +210,7 @@ class StatusRoute extends PageRouteInfo<void> {
 /// [StorageSettingsPage]
 class StorageSettingsRoute extends PageRouteInfo<void> {
   const StorageSettingsRoute({List<PageRouteInfo>? children})
-    : super(StorageSettingsRoute.name, initialChildren: children);
+      : super(StorageSettingsRoute.name, initialChildren: children);
 
   static const String name = 'StorageSettingsRoute';
 
@@ -165,16 +229,20 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
     Key? key,
     required Status status,
     bool isStored = false,
+    List<Status> allStatuses = const [],
+    int currentIndex = 0,
     List<PageRouteInfo>? children,
   }) : super(
-         VideoViewerRoute.name,
-         args: VideoViewerRouteArgs(
-           key: key,
-           status: status,
-           isStored: isStored,
-         ),
-         initialChildren: children,
-       );
+          VideoViewerRoute.name,
+          args: VideoViewerRouteArgs(
+            key: key,
+            status: status,
+            isStored: isStored,
+            allStatuses: allStatuses,
+            currentIndex: currentIndex,
+          ),
+          initialChildren: children,
+        );
 
   static const String name = 'VideoViewerRoute';
 
@@ -186,6 +254,8 @@ class VideoViewerRoute extends PageRouteInfo<VideoViewerRouteArgs> {
         key: args.key,
         status: args.status,
         isStored: args.isStored,
+        allStatuses: args.allStatuses,
+        currentIndex: args.currentIndex,
       );
     },
   );
@@ -196,6 +266,8 @@ class VideoViewerRouteArgs {
     this.key,
     required this.status,
     this.isStored = false,
+    this.allStatuses = const [],
+    this.currentIndex = 0,
   });
 
   final Key? key;
@@ -204,17 +276,40 @@ class VideoViewerRouteArgs {
 
   final bool isStored;
 
+  final List<Status> allStatuses;
+
+  final int currentIndex;
+
   @override
   String toString() {
-    return 'VideoViewerRouteArgs{key: $key, status: $status, isStored: $isStored}';
+    return 'VideoViewerRouteArgs{key: $key, status: $status, isStored: $isStored, allStatuses: $allStatuses, currentIndex: $currentIndex}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! VideoViewerRouteArgs) return false;
+    return key == other.key &&
+        status == other.status &&
+        isStored == other.isStored &&
+        const ListEquality<Status>().equals(allStatuses, other.allStatuses) &&
+        currentIndex == other.currentIndex;
+  }
+
+  @override
+  int get hashCode =>
+      key.hashCode ^
+      status.hashCode ^
+      isStored.hashCode ^
+      const ListEquality<Status>().hash(allStatuses) ^
+      currentIndex.hashCode;
 }
 
 /// generated route for
 /// [VideosPage]
 class VideosRoute extends PageRouteInfo<void> {
   const VideosRoute({List<PageRouteInfo>? children})
-    : super(VideosRoute.name, initialChildren: children);
+      : super(VideosRoute.name, initialChildren: children);
 
   static const String name = 'VideosRoute';
 

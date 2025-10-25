@@ -53,7 +53,7 @@ class _StatusPageState extends State<StatusPage> {
         );
       },
       child: AutoTabsRouter.tabBar(
-        routes: const <PageRouteInfo>[
+        routes: <PageRouteInfo>[
           ImagesRoute(),
           VideosRoute(),
           SavedRoute(),

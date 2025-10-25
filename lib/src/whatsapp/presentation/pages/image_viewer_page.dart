@@ -18,10 +18,14 @@ class ImageViewerPage extends StatefulWidget {
     super.key,
     required this.status,
     this.isStored = false,
+    this.allStatuses = const [],
+    this.currentIndex = 0,
   });
 
   final Status status;
   final bool isStored;
+  final List<Status> allStatuses;
+  final int currentIndex;
 
   @override
   State<ImageViewerPage> createState() => _ImageViewerPageState();
@@ -29,10 +33,14 @@ class ImageViewerPage extends StatefulWidget {
 
 class _ImageViewerPageState extends State<ImageViewerPage> {
   bool _isStored = false;
+  late PageController _pageController;
+  late int _currentIndex;
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.currentIndex;
+    _pageController = PageController(initialPage: widget.currentIndex);
     _checkStoredStatus();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -50,6 +58,12 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
         ),
       );
     });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,117 +85,160 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
       ),
       body: Stack(
         children: [
-          GestureDetector(
-            onDoubleTap: () {
-              showModalBottomSheet(
-                enableDrag: false,
-                showDragHandle: true,
-                context: context,
-                builder: (context) => Container(
-                  decoration: BoxDecoration(
-                    color: kWhiteColor,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20.r),
-                      topRight: Radius.circular(20.r),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      vertical: 8.h,
-                      horizontal: 30.w,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        ListTile(
-                          leading: Icon(
-                            LucideIcons.share2,
-                            size: 25.sp,
-                          ),
-                          title: Text(
-                            'Share',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                          onTap: () {
-                            cubit.share(status: widget.status);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Sharing...',
-                                  style: TextStyle(
-                                    fontSize: 14.sp,
-                                  ),
-                                ),
-                              ),
-                            );
-                            context.router.maybePop();
-                          },
-                        ),
-                        const Divider(),
-                        ListTile(
-                          leading: Icon(
-                            LucideIcons.download,
-                            size: 25.sp,
-                          ),
-                          title: Text(
-                            'Save',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                          onTap: () {
-                            cubit.store(status: widget.status);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                backgroundColor: kPrimaryColor,
-                                content: Text(
-                                  'Image saved',
-                                  style: TextStyle(
-                                    color: kWhiteColor,
-                                    fontSize: 14.sp,
-                                  ),
-                                ),
-                              ),
-                            );
-                            context.router.maybePop();
-                          },
-                        ),
-                        SizedBox(height: 20.h),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-            child: InteractiveViewer(
-              child: Center(
-                child: Image.file(
-                  File(widget.status.path),
-                ),
-              ),
-            ),
+          // Contenu principal avec padding en bas pour éviter le bottom bar
+          Padding(
+            padding: EdgeInsets.only(bottom: 80.h), // Espace pour le bottom bar
+            child: widget.allStatuses.isNotEmpty
+                ? PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentIndex = index;
+                      });
+                      _checkStoredStatus();
+                    },
+                    itemCount: widget.allStatuses.length,
+                    itemBuilder: (context, index) {
+                      final status = widget.allStatuses[index];
+                      return _buildImagePage(status, cubit);
+                    },
+                  )
+                : _buildImagePage(widget.status, cubit),
           ),
-          // Actions en bas de page
+          // Bottom navigation bar fixe
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: _buildBottomActions(cubit),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 4,
+                    offset: Offset(0, -2.h),
+                  ),
+                ],
+              ),
+              child: _buildBottomActions(
+                  cubit,
+                  widget.allStatuses.isNotEmpty
+                      ? widget.allStatuses[_currentIndex]
+                      : widget.status),
+            ),
           ),
         ],
       ),
     );
   }
 
-  void _handleRepost(StatusCubit cubit) async {
+  Widget _buildImagePage(Status status, StatusCubit cubit) {
+    return Stack(
+      children: [
+        GestureDetector(
+          onDoubleTap: () {
+            showModalBottomSheet(
+              enableDrag: false,
+              showDragHandle: true,
+              context: context,
+              builder: (context) => Container(
+                decoration: BoxDecoration(
+                  color: kWhiteColor,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20.r),
+                    topRight: Radius.circular(20.r),
+                  ),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: 8.h,
+                    horizontal: 30.w,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      ListTile(
+                        leading: Icon(
+                          LucideIcons.share2,
+                          size: 25.sp,
+                        ),
+                        title: Text(
+                          'Share',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                          ),
+                        ),
+                        onTap: () {
+                          cubit.share(status: status);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Sharing...',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                ),
+                              ),
+                            ),
+                          );
+                          context.router.maybePop();
+                        },
+                      ),
+                      const Divider(),
+                      ListTile(
+                        leading: Icon(
+                          LucideIcons.download,
+                          size: 25.sp,
+                        ),
+                        title: Text(
+                          'Save',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                          ),
+                        ),
+                        onTap: () {
+                          cubit.store(status: status);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: kPrimaryColor,
+                              content: Text(
+                                'Image saved',
+                                style: TextStyle(
+                                  color: kWhiteColor,
+                                  fontSize: 14.sp,
+                                ),
+                              ),
+                            ),
+                          );
+                          context.router.maybePop();
+                        },
+                      ),
+                      SizedBox(height: 20.h),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+          child: InteractiveViewer(
+            child: Center(
+              child: Image.file(
+                File(status.path),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _handleRepost(StatusCubit cubit, Status status) async {
     try {
       // Partager directement vers WhatsApp
       await SocialSharingPlus.shareToSocialMedia(
         SocialPlatform.whatsapp,
         'Statut partagé depuis SnapKeep',
-        media: widget.status.path,
+        media: status.path,
         isOpenBrowser: false,
         onAppNotInstalled: () {
           _showActionFeedback(
@@ -194,8 +251,8 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     }
   }
 
-  void _handleShare(StatusCubit cubit) {
-    cubit.share(status: widget.status);
+  void _handleShare(StatusCubit cubit, Status status) {
+    cubit.share(status: status);
     _showActionFeedback('Partage en cours...', Colors.green);
   }
 
@@ -230,12 +287,11 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     );
   }
 
-  Widget _buildBottomActions(StatusCubit cubit) {
+  Widget _buildBottomActions(StatusCubit cubit, Status status) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        color: Colors.black.withValues(alpha: 0.9),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -243,19 +299,19 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
           _buildBottomActionButton(
             icon: LucideIcons.rotateCcw,
             label: 'Republier',
-            onTap: () => _handleRepost(cubit),
+            onTap: () => _handleRepost(cubit, status),
             color: Colors.blue,
           ),
           _buildBottomActionButton(
             icon: LucideIcons.share2,
             label: 'Partager',
-            onTap: () => _handleShare(cubit),
+            onTap: () => _handleShare(cubit, status),
             color: Colors.green,
           ),
           _buildBottomActionButton(
             icon: _isStored ? LucideIcons.check : LucideIcons.download,
             label: _isStored ? 'Sauvegardé' : 'Sauvegarder',
-            onTap: () => _handleSave(cubit),
+            onTap: () => _handleSave(cubit, status),
             color: Colors.orange,
           ),
         ],
@@ -303,7 +359,10 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
 
   Future<void> _checkStoredStatus() async {
     final cubit = context.read<StatusCubit>();
-    final isStored = await cubit.isStored(path: widget.status.path);
+    final currentStatus = widget.allStatuses.isNotEmpty
+        ? widget.allStatuses[_currentIndex]
+        : widget.status;
+    final isStored = await cubit.isStored(path: currentStatus.path);
     if (mounted) {
       setState(() {
         _isStored = isStored;
@@ -311,9 +370,9 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     }
   }
 
-  void _handleSave(StatusCubit cubit) async {
+  void _handleSave(StatusCubit cubit, Status status) async {
     if (!_isStored) {
-      cubit.store(status: widget.status);
+      cubit.store(status: status);
       await _checkStoredStatus();
       _showActionFeedback('Image sauvegardée', Colors.orange);
     }
